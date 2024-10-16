@@ -1,11 +1,12 @@
 <div>
     <header>
-        <img src="/logo.png" alt="">
+        <a href="/">
+            <img src="/logo.png" alt="">
+        </a>
         <nav>
-            <a href="/">Galeria</a>
+            <a href="/galeria">Galeria</a>
             <a href="/blog">Blog</a>
-            <a href="/about">Sobre el Yali</a>
-            <a href="/contact">Contacto</a>
+            <a href="/contacto">Contacto</a>
         </nav>
     </header>
 </div>
@@ -26,6 +27,13 @@
 
     img {
         width: 250px;
+        transition: .3s ease;
+
+    }
+
+    img:hover {
+        transform: scale(1.1);
+        transition: .3s ease;
     }
 
     a {
@@ -34,8 +42,5 @@
         cursor: pointer;
         margin: 16px;
     }
-
-    a:hover {
-        color: rgb(156, 156, 156);
-    }
+    
 </style>
