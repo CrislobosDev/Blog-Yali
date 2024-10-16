@@ -1,0 +1,28 @@
+---
+import Header from "../components/Header.astro";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yali Salvaje</title>
+  </head>
+  <body>
+    <main>
+      <slot />
+    </main>
+
+    <style>
+      body {
+        background-color: rgb(39, 39, 39);
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+
+    <script type="module" src="/src/_assets/js/main.js"></script>
+  </body>
+</html>
