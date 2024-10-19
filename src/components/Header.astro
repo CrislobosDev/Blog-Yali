@@ -12,11 +12,11 @@
             &#9776;
         </div>
     </header>
-    <nav class="menu-hamburger">
-        <a href="/blog">Blog</a>
-        <a href="/galeria">Galeria</a>
-        <a href="/contacto">Contacto</a>
-    </nav>
+        <nav class="menu-hamburger">
+            <a href="/blog">Blog</a>
+            <a href="/galeria">Galeria</a>
+            <a href="/contacto">Contacto</a>
+        </nav>
 </div>
 
 <style>
@@ -41,12 +41,16 @@
     }
 
     .hamburger {
+        position: relative;
+        width: 50px;
         font-size: 30px;
         color: white;
         cursor: pointer;
+        background-color: rgba(0, 0, 0, 0);
     }
     
     .menu-hamburger {
+        line-height: 8rem;
         display: none;
         background-color: rgba(0, 0, 0, 0.705);
         width: 100%;
@@ -64,6 +68,7 @@
         }
         .hamburger {
             display: none; 
+            
         }
 
         .menu-hamburger {
