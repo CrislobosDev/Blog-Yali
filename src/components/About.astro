@@ -5,12 +5,12 @@
     proteger el <span>Humedal El Yali</span> y su biodiversidad. A través de actividades
     de turismo sostenible, investigación científica y educación ambiental, queremos
     promover la conservación de este ecosistema único en la Región de Valparaíso,
-    Chile.
+    Chile. Ademas en esta pagina podras encontrar informacion sobre la flora y fauna
+    del humedal.
   </p>
 
   <div>
-    <img src="/Matanza.jpg" alt="" />
-    <img src="/bajo.jpg" alt="" />
+    <img src="/logo.png" alt="">
   </div>
 </section>
 
@@ -49,12 +49,15 @@
   }
 
   img {
-    width: auto;
-    height: 30rem;
+    background-color: #272727;
+    height: 18rem;
     transition: all 0.5s;
+    margin-top: 2rem;
   }
-  img:hover {
-    transform: scale(1.1);
-    transition: all 0.5s;
+
+  @media (max-width: 768px) {
+    img {
+      height: 5rem;
+    }
   }
 </style>
