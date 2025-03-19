@@ -1,25 +1,49 @@
+---
+import { useEffect } from "react";
+---
+
 <section>
     <h1>BIENVENIDO AL HUMEDAL EL YALI</h1>
-    <h2>Nido de conservacion</h2>
+    <h2>Nido de conservación</h2>
 
-    <img src="/Xolmis pyrope.jpg" alt="">
-    <img src="/Anairetes parulus.jpg" alt="">
-    <img src="/Colaptes pitius.jpg" alt="">
-    <img src="/Albufera-Garza Boyera.jpg" alt="">
-    <img src="/Pelicano.jpg" alt="">
+    <div class="carousel">
+        <img src="/Xolmis pyrope.jpg" alt="Xolmis pyrope">
+        <img src="/Anairetes parulus.jpg" alt="Anairetes parulus">
+        <img src="/Colaptes pitius.jpg" alt="Colaptes pitius">
+        <img src="/Albufera-Garza Boyera.jpg" alt="Garza Boyera">
+        <img src="/Pelicano.jpg" alt="Pelícano">
+    </div>
 </section>
 
-<style>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        if (window.innerWidth <= 768) { // Solo ejecuta el script en móviles
+            let index = 0;
+            const images = document.querySelectorAll(".carousel img");
 
+            function showNextImage() {
+                images.forEach((img, i) => {
+                    img.style.opacity = i === index ? "1" : "0";
+                });
+                index = (index + 1) % images.length;
+            }
+
+            setInterval(showNextImage, 3000); // Cambia cada 4 segundos
+        }
+    });
+</script>
+
+<style>
     h1 {
         position: absolute;
         color: aliceblue;
-        top: 62%;
+        top: 30%;
         z-index: 10;
         width: 100%;
         font-size: 4rem;
         text-align: center;
     }
+
     h2 {
         font-weight: 300;
         position: absolute;
@@ -30,27 +54,71 @@
         font-size: 3rem;
         text-align: center;
     }
-    
+
     section {
         position: relative;
         margin: 0 auto;
         display: flex;
         width: 100%;
         height: 100vh;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
     }
 
-    section img {
-        width: 0px;
-        flex-grow: 1;
+    .carousel {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    .carousel img {
+        position: absolute;
+        width: 100%;
+        height: 100%;
         object-fit: cover;
-        opacity: .5;
-        transition: .5s ease;
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
     }
 
-    section img:hover {
-        
-        width: 300px;
+    .carousel img:first-child {
         opacity: 1;
-        filter: contrast(120%);
+    }
+
+    /* 🎯 Mantiene el efecto original en pantallas grandes */
+    @media (min-width: 769px) {
+        .carousel {
+            display: flex;
+        }
+
+        .carousel img {
+            position: static;
+            width: 0px;
+            flex-grow: 1;
+            opacity: 0.5;
+            transition: 0.5s ease;
+        }
+
+        .carousel img:hover {
+            width: 300px;
+            opacity: 1;
+            filter: contrast(120%);
+        }
+    }
+
+    /* 🎯 Aplica el carrusel solo en móviles */
+    @media (max-width: 768px) {
+        .carousel img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .carousel img:first-child {
+            opacity: 1;
+        }
     }
 </style>
