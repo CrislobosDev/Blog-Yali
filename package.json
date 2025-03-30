@@ -12,5 +12,8 @@
   "dependencies": {
     "@astrojs/react": "^4.2.1",
     "astro": "^4.15.8"
+  },
+  "devDependencies": {
+    "prisma": "^6.5.0"
   }
 }
