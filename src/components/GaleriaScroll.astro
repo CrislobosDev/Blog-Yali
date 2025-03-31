@@ -1,87 +1,108 @@
+<h1>Galería de fotos</h1>
 
-<h1>Galeria de fotos</h1>
-<section>
-    <div class="card-picture">
-        <img src="/Albufera-Garza Boyera.jpg" alt="">
-        <h2>Garza Bollera</h2>
-        <h3>Breve descripcion del ave de esta tarjeta</h3>
-    </div>
-    <div class="card-picture">
-        <img src="/Albufera-Garza Boyera.jpg" alt="">
-        <h2>Garza Bollera</h2>
-        <h3>Breve descripcion del ave de esta tarjeta</h3>
-    </div>
-    <div class="card-picture">
-        <img src="/Albufera-Garza Boyera.jpg" alt="">
-        <h2>Garza Bollera</h2>
-        <h3>Breve descripcion del ave de esta tarjeta</h3>
-    </div>
-    <div class="card-picture">
-        <img src="/Albufera-Garza Boyera.jpg" alt="">
-        <h2>Garza Bollera</h2>
-        <h3>Breve descripcion del ave de esta tarjeta</h3>
-    </div>
-    <div class="card-picture">
-        <img src="/Albufera-Garza Boyera.jpg" alt="">
-        <h2>Garza Bollera</h2>
-        <h3>Breve descripcion del ave de esta tarjeta</h3>
-    </div>
-    <div class="card-picture">
-        <img src="/Albufera-Garza Boyera.jpg" alt="">
-        <h2>Garza Bollera</h2>
-        <h3>Breve descripcion del ave de esta tarjeta</h3>
-    </div>
-    <div class="card-picture">
-        <img src="/Albufera-Garza Boyera.jpg" alt="">
-        <h2>Garza Bollera</h2>
-        <h3>Breve descripcion del ave de esta tarjeta</h3>
-    </div>
-
+<section id="galeria" class="contenedor-galeria">
+  <!-- Las tarjetas de imagen se agregarán dinámicamente aquí -->
 </section>
 
 <style>
+  h1 {
+    margin-top: 10rem;
+    text-align: center;
+    color: rgb(233, 228, 213);
+  }
 
-    h1 {
-        margin-top: 10rem;
-        text-align: center;
-        color: rgb(233, 228, 213);
-    }
+  section {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 4rem;
+  }
 
-    section {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        margin-top: 4rem;
-    }
+  .card-picture {
+    margin: 1rem;
+    padding: 1rem;
+    text-align: left;
+    width: 24rem;
+    height: 26rem;
+    background-color: rgba(0, 0, 0, 0.418);
+    border-radius: 1rem;
+    transition: ease 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
 
-    .card-picture {
-        margin: 1rem;
-        padding: 1rem;
-        text-align: left;
-        width: 24rem;
-        height: 26rem;
-        background-color: rgba(0, 0, 0, 0.418);
-        border-radius: 1rem;
-        transition: ease .2s;
-    }
+  .card-picture:hover {
+    background-color: rgba(0, 0, 0, 0.781);
+    transition: ease 0.2s;
+  }
 
-    .card-picture:hover {
-        background-color: rgba(0, 0, 0, 0.781);
-        transition: ease .2s;
-    }
+  h2,
+  h3 {
+    color: rgb(233, 228, 213);
+  }
 
-    h2{
-        color: rgb(233, 228, 213);
-    }
+  h3 {
+    font-weight: 400;
+  }
 
-    h3 {
-        color: rgb(233, 228, 213);
-        font-weight: 400;
-    }
-
-    img {
-        width: 24rem;
-        border-radius: 0.2rem;
-    }
-
+  img {
+    width: 100%;
+    border-radius: 0.2rem;
+    object-fit: cover;
+  }
 </style>
+
+<script>
+  const galeria = document.getElementById('galeria');
+  let pagina = 1;
+  let cargando = false;
+
+  async function cargarImagenes() {
+    if (cargando) return;
+    cargando = true;
+
+    try {
+      const res = await fetch(`/api/imagenes?pagina=${pagina}`);
+      const nuevasImagenes = await res.json();
+
+      nuevasImagenes.forEach(img => {
+        const tarjeta = document.createElement('div');
+        tarjeta.classList.add('card-picture');
+
+        const imagen = document.createElement('img');
+        imagen.src = img.url;
+        imagen.alt = img.descripcion;
+
+        const titulo = document.createElement('h2');
+        titulo.textContent = 'Fotografía de El Yali';
+
+        const descripcion = document.createElement('h3');
+        descripcion.textContent = img.descripcion;
+
+        tarjeta.appendChild(imagen);
+        tarjeta.appendChild(titulo);
+        tarjeta.appendChild(descripcion);
+
+        galeria.appendChild(tarjeta);
+      });
+
+      if (nuevasImagenes.length > 0) {
+        pagina++;
+      }
+
+    } catch (error) {
+      console.error('Error cargando imágenes:', error);
+    } finally {
+      cargando = false;
+    }
+  }
+
+  window.addEventListener('scroll', () => {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
+      cargarImagenes();
+    }
+  });
+
+  cargarImagenes();
+</script>
