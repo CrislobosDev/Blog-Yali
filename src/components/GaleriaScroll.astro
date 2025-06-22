@@ -7,7 +7,7 @@ import Layout from '../layout/Layout.astro'; // Asume que tienes un Layout.astro
 // Esta parte se ejecuta en el servidor (durante la compilación o en el servidor si es SSR)
 // IMPORTANTE: Asegúrate de que esta URL sea correcta para tu entorno de desarrollo.
 // Si tu servidor Astro corre en un puerto diferente al 4321, cámbialo aquí.
-const response = await fetch('http://localhost:4321/api/imagenes');
+const response = await fetch('/api/imagenes');
 const imagenes = await response.json();
 
 // Puedes ordenar las imágenes aquí si no lo haces en la API
