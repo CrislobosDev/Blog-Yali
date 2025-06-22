@@ -1,108 +1,205 @@
-<h1>Galería de fotos</h1>
+---
+// src/pages/galeria.astro
+import Layout from '../layout/Layout.astro'; // Asume que tienes un Layout.astro
+// import { Image } from 'astro:assets'; // Para optimización de imágenes si quieres usar el componente Image de Astro
 
-<section id="galeria" class="contenedor-galeria">
-  <!-- Las tarjetas de imagen se agregarán dinámicamente aquí -->
-</section>
+// Aquí haremos la llamada a tu API para obtener las imágenes
+// Esta parte se ejecuta en el servidor (durante la compilación o en el servidor si es SSR)
+// IMPORTANTE: Asegúrate de que esta URL sea correcta para tu entorno de desarrollo.
+// Si tu servidor Astro corre en un puerto diferente al 4321, cámbialo aquí.
+const response = await fetch('http://localhost:4321/api/imagenes');
+const imagenes = await response.json();
 
-<style>
-  h1 {
-    margin-top: 10rem;
-    text-align: center;
-    color: rgb(233, 228, 213);
-  }
+// Puedes ordenar las imágenes aquí si no lo haces en la API
+// Por ejemplo, para ordenar por fecha de subida de más reciente a más antigua:
+imagenes.sort((a, b) => new Date(b.fechaSubida).getTime() - new Date(a.fechaSubida).getTime());
 
-  section {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 4rem;
-  }
+// Si quieres paginación, necesitarías pasar el parámetro 'pagina' a tu API
+// Por ejemplo: const response = await fetch('http://localhost:4321/api/imagenes?pagina=1');
+---
 
-  .card-picture {
-    margin: 1rem;
-    padding: 1rem;
-    text-align: left;
-    width: 24rem;
-    height: 26rem;
-    background-color: rgba(0, 0, 0, 0.418);
-    border-radius: 1rem;
-    transition: ease 0.2s;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
+<Layout title="Galería de Yali Salvaje">
+  <main>
+    <h1>Nuestras Imágenes del Humedal El Yali</h1>
+    <p>Explora la belleza y diversidad del Humedal El Yali a través de nuestras fotografías.</p>
 
-  .card-picture:hover {
-    background-color: rgba(0, 0, 0, 0.781);
-    transition: ease 0.2s;
-  }
+    <section class="image-grid">
+      {imagenes.length > 0 ? (
+        imagenes.map((imagen) => (
+          <div class="image-card">
+            {/* La etiqueta img ahora tiene un cursor: pointer para indicar que es clickeable */}
+            <img
+              src={imagen.url} 
+              alt={imagen.altText || 'Imagen del Humedal El Yali'} 
+              loading="lazy" 
+              data-full-src={imagen.url} // Un atributo personalizado para la URL completa si es diferente
+              data-alt-text={imagen.altText || 'Imagen del Humedal El Yali'} // Atributo para el  text en el modal
+            />
+            <div class="image-info">
+              <h3>{imagen.altText || 'Imagen sin título'}</h3>
+              <p><small>Subida el: {new Date(imagen.fechaSubida).toLocaleDateString('es-CL')}</small></p>
+            </div>
+          </div>
+        ))
+      ) : (
+        <p>Aún no hay imágenes en la galería. ¡Sube algunas!</p>
+      )}
+    </section>
+  </main>
 
-  h2,
-  h3 {
-    color: rgb(233, 228, 213);
-  }
+  <div id="fullscreen-modal" class="fullscreen-modal">
+    <span class="close-button">&times;</span>
+    <img id="fullscreen-image" src="" alt="Vista en pantalla completa">
+  </div>
 
-  h3 {
-    font-weight: 400;
-  }
+  <style>
+    /* Estilos básicos para la galería */
+    main {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #3b3f4867;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      color: #f8f8f2;
+    }
+    h1 {
+      color: #61dafb;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    p {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+    }
+    .image-card {
+      background-color: #4a4f59;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      height: 100%; /* Asegura que todas las tarjetas tengan la misma altura si el contenido no varia */
+    }
+    .image-card img {
+      width: 100%;
+      height: 200px; /* Altura fija para las imágenes, puedes ajustarlo */
+      object-fit: cover; /* Recorta la imagen para que cubra el espacio */
+      display: block;
+      cursor: pointer; /* Agrega el cursor de puntero para indicar que es clickeable */
+    }
+    .image-info {
+      padding: 15px;
+      text-align: center;
+      flex-grow: 1; /* Permite que la info ocupe el espacio restante */
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .image-info h3 {
+      margin-top: 0;
+      color: #f8f8f2;
+      font-size: 1.15rem;
+      margin-bottom: 10px;
+    }
+    .image-info p {
+      color: #a0a8b4;
+      font-size: 0.85rem;
+      margin-bottom: 0; /* Elimina margen inferior extra del p */
+    }
 
-  img {
-    width: 100%;
-    border-radius: 0.2rem;
-    object-fit: cover;
-  }
-</style>
+    /* ESTILOS CSS PARA EL MODAL */
+    .fullscreen-modal {
+      display: none; /* Oculto por defecto */
+      position: fixed; /* Fijo en la pantalla */
+      z-index: 1000; /* Asegura que esté por encima de todo */
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto; /* Para scroll si la imagen es muy grande */
+      background-color: rgba(0, 0, 0, 0.9); /* Fondo semi-transparente negro */
+      cursor: pointer; /* Cursor de puntero para indicar que se puede cerrar */
+    }
 
-<script>
-  const galeria = document.getElementById('galeria');
-  let pagina = 1;
-  let cargando = false;
+    .fullscreen-modal img {
+      max-width: 90%; /* Ajusta el tamaño de la imagen */
+      max-height: 90%;
+      display: block;
+      margin: auto; /* Centra la imagen */
+    }
 
-  async function cargarImagenes() {
-    if (cargando) return;
-    cargando = true;
+    .close-button {
+      position: absolute;
+      top: 20px;
+      right: 35px;
+      color: #f1f1f1;
+      font-size: 40px;
+      font-weight: bold;
+      transition: 0.3s;
+      cursor: pointer;
+    }
 
-    try {
-      const res = await fetch(`/api/imagenes?pagina=${pagina}`);
-      const nuevasImagenes = await res.json();
+    .close-button:hover,
+    .close-button:focus {
+      color: #bbb;
+      text-decoration: none;
+      cursor: pointer;
+    }
+  </style>
 
-      nuevasImagenes.forEach(img => {
-        const tarjeta = document.createElement('div');
-        tarjeta.classList.add('card-picture');
+  <script is:inline>
+    // is:inline es importante si no estás usando un framework de UI con Astro
+    // Obtener referencias a los elementos del DOM
+    const fullscreenModal = document.getElementById('fullscreen-modal');
+    const fullscreenImage = document.getElementById('fullscreen-image');
+    const closeButton = document.querySelector('.close-button');
+    // Selecciona todas las imágenes dentro de las tarjetas con la clase 'image-card img'
+    const imageCards = document.querySelectorAll('.image-card img'); 
 
-        const imagen = document.createElement('img');
-        imagen.src = img.url;
-        imagen.alt = img.descripcion;
+    // Función para abrir el modal
+    function openModal(src, alt) {
+      fullscreenImage.src = src;
+      fullscreenImage.alt = alt;
+      fullscreenModal.style.display = 'flex'; // Muestra el modal
+    }
 
-        const titulo = document.createElement('h2');
-        titulo.textContent = 'Fotografía de El Yali';
+    // Función para cerrar el modal
+    function closeModal() {
+      fullscreenModal.style.display = 'none'; // Oculta el modal
+      fullscreenImage.src = ''; // Limpia la imagen (opcional, pero buena práctica)
+      fullscreenImage.alt = '';
+    }
 
-        const descripcion = document.createElement('h3');
-        descripcion.textContent = img.descripcion;
-
-        tarjeta.appendChild(imagen);
-        tarjeta.appendChild(titulo);
-        tarjeta.appendChild(descripcion);
-
-        galeria.appendChild(tarjeta);
+    // Añadir un Event Listener a cada imagen de la galería
+    imageCards.forEach(img => {
+      img.addEventListener('click', () => {
+        // Usa los atributos data- si la URL o alt text de la vista previa es diferente
+        // openModal(img.dataset.fullSrc || img.src, img.dataset.altText || img.alt);
+        openModal(img.src, img.alt); // Si la URL y alt text de la miniatura son suficientes
       });
+    });
 
-      if (nuevasImagenes.length > 0) {
-        pagina++;
+    // Añadir Event Listeners para cerrar el modal
+    closeButton.addEventListener('click', closeModal); // Clic en el botón "x"
+
+    fullscreenModal.addEventListener('click', (event) => {
+      // Cerrar solo si se hace clic fuera de la imagen (en el fondo del modal)
+      if (event.target === fullscreenModal) {
+        closeModal();
       }
+    });
 
-    } catch (error) {
-      console.error('Error cargando imágenes:', error);
-    } finally {
-      cargando = false;
-    }
-  }
-
-  window.addEventListener('scroll', () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
-      cargarImagenes();
-    }
-  });
-
-  cargarImagenes();
-</script>
+    // Cerrar el modal con la tecla Escape
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && fullscreenModal.style.display === 'flex') {
+        closeModal();
+      }
+    });
+  </script>
+</Layout>

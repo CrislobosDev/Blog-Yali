@@ -10,9 +10,10 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/node": "^9.2.2",
     "@astrojs/react": "^4.2.1",
     "@prisma/client": "^6.5.0",
-    "astro": "^4.15.8"
+    "astro": "^5.10.0"
   },
   "devDependencies": {
     "prisma": "^6.5.0",

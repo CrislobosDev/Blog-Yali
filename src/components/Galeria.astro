@@ -37,22 +37,34 @@ import { useEffect } from "react";
     h1 {
         position: absolute;
         color: aliceblue;
-        top: 30%;
+        top: 50%;
         z-index: 10;
         width: 100%;
         font-size: 4rem;
         text-align: center;
+
+        @media screen and (max-width: 768px) {
+            font-size: 2.5rem; /* Ajusta el tamaño del texto en móviles */
+            
+        }
     }
 
     h2 {
         font-weight: 300;
         position: absolute;
         color: aliceblue;
-        top: 72%;
+        top: 70%;
         z-index: 10;
         width: 100%;
         font-size: 3rem;
         text-align: center;
+        margin: 0;
+
+        @media screen and (max-width: 768px) {
+            font-size: 1.5rem; /* Ajusta el tamaño del texto en móviles */
+            margin-top: 1rem;
+            
+        }
     }
 
     section {
