@@ -3,8 +3,6 @@
 Sitio web dedicado a mostrar la belleza natural del **Humedal El Yali**, su fauna, flora y los esfuerzos por su conservación.  
 Una galería viva de fotos, experiencias y registros de este ecosistema único ubicado en la Región de Valparaíso, Chile.
 
-![Yali Salvaje](https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Humedal_El_Yali_-_Chile.jpg/1200px-Humedal_El_Yali_-_Chile.jpg)  
-*Foto referencial del humedal*
 
 ---
 
@@ -22,8 +20,7 @@ Una galería viva de fotos, experiencias y registros de este ecosistema único u
 
 - [Astro](https://astro.build/)
 - [JavaScript](https://developer.mozilla.org/es/docs/Web/JavaScript)
-- [CSS Modules / Tailwind CSS] *(según lo que uses)*
-- [Vite](https://vitejs.dev/) *(si aplica)*
+- CSS Modules / Tailwind CSS
 
 ---
 
