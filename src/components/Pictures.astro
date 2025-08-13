@@ -2,34 +2,64 @@
     <div>
         <h1>Fotografias del Yali</h1>
     </div>
-    <div>
-        <img src="./bajo.jpg" alt="Lago">
-    </div>
-    <div>
-        <img src="./Matanza.jpg" alt="Lago">
-    </div>
-    <div>
-        <img src="./Colaptes pitius.jpg" alt="Lago">
-    </div>
-    <div>
-        <img src="./bajo.jpg" alt="Lago">
-    </div>
+    <div class="grid">
         <div>
-        <img src="./Matanza.jpg" alt="Lago">
-    </div>
-    <div>
-        <img src="./Colaptes pitius.jpg" alt="Lago">
+            <img src="./bajo.jpg" alt="Lago" />
+        </div>
+        <div>
+            <img src="./Colaptes pitius.jpg" alt="Lago" />
+        </div>
+                <div>
+            <img src="./bajo.jpg" alt="Lago" />
+        </div>
+        <div>
+            <img src="./Colaptes pitius.jpg" alt="Lago" />
+        </div>
+        <div>
+            <img src="./Matanza.jpg" alt="Lago" />
+        </div>
+        <div>
+            <img src="./bajo.jpg" alt="Lago" />
+        </div>
+        <div>
+            <img src="./Colaptes pitius.jpg" alt="Lago" />
+        </div>
+        <div>
+            <img src="./Matanza.jpg" alt="Lago" />
+        </div>
+        <div>
+            <img src="./Matanza.jpg" alt="Lago" />
+        </div>
+        <div>
+            <img src="./bajo.jpg" alt="Lago" />
+        </div>
+        <div>
+            <img src="./Colaptes pitius.jpg" alt="Lago" />
+        </div>
+        <div>
+            <img src="./Matanza.jpg" alt="Lago" />
+        </div>
     </div>
 </section>
 
 <style>
     section {
+        background-color: #dddddd;
         display: flex;
         justify-content: center;
         align-items: center;
-        flex-wrap: wrap;
-        background-color: #f0f0f0;
-        ;
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 20px;
+
+        @media (max-width: 768px) {
+            grid-template-columns: 1fr;
+        }
     }
 
     div {
@@ -39,16 +69,25 @@
     }
 
     img {
-        width: 50%;
+        width: 90%;
         height: auto;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease;
+        transition: transform 0.2s ease;
+        &:hover {
+            transform: scale(1.05);
+        }
     }
-    h2 {
+    h1 {
         position: relative;
-        font-size: 1.5rem;
-        margin-top: 10px;
+        font-size: 3.9rem;
+        margin: 80px;
         color: #555;
+
+        @media (max-width: 768px) {
+            font-size: 2.9rem;
+            margin: 40px;
+        }
     }
 </style>
+
