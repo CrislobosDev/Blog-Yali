@@ -1,16 +1,42 @@
 ---
-import Layout from "../layout/Layout.astro";
-import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
-
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/ui/Header.astro";
+import Footer from "../components/ui/Footer.astro";
 ---
 
-<Layout />
-<div>
+<Layout title="Contacto | Yali Salvaje">
   <Header />
-
+  <section class="page">
+    <div class="container">
+      <p class="kicker">Conversemos</p>
+      <h1>Contacto</h1>
+      <p class="lead">Estamos preparando un formulario y canales directos para coordinar visitas y actividades.</p>
+    </div>
+  </section>
   <Footer />
-</div>
-<Layout />
+</Layout>
 
+<style>
+  .page {
+    padding: 7rem 0 6rem;
+  }
 
+  h1 {
+    font-family: "Alegreya", serif;
+    font-size: clamp(2.5rem, 4vw, 4rem);
+    margin: 0 0 1rem;
+  }
+
+  .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.25rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin: 0 0 0.5rem;
+  }
+
+  .lead {
+    font-size: 1.1rem;
+    max-width: 640px;
+  }
+</style>

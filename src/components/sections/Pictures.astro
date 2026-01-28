@@ -1,0 +1,84 @@
+---
+const fotos = [
+  { src: "/bajo.jpg", alt: "Laguna del humedal" },
+  { src: "/Colaptes pitius.jpg", alt: "Colaptes pitius" },
+  { src: "/Matanza.jpg", alt: "Paisaje costero" },
+  { src: "/Anairetes parulus.jpg", alt: "Anairetes parulus" },
+  { src: "/Pelicano.jpg", alt: "Pelícano" },
+  { src: "/Albufera-Garza Boyera.jpg", alt: "Garza Boyera" },
+];
+---
+
+<section class="pictures">
+  <div class="container">
+    <div class="title">
+      <p class="kicker">Galería destacada</p>
+      <h2>Fotografías del Yali</h2>
+    </div>
+    <div class="grid">
+      {fotos.map((foto) => (
+        <figure>
+          <img src={foto.src} alt={foto.alt} loading="lazy" />
+          <figcaption>{foto.alt}</figcaption>
+        </figure>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .pictures {
+    background: var(--paper-2);
+    padding: 6rem 0;
+  }
+
+  .title {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.25rem;
+    font-size: 0.8rem;
+    margin: 0 0 0.5rem;
+    color: var(--muted);
+  }
+
+  h2 {
+    font-family: "Alegreya", serif;
+    font-size: clamp(2rem, 3vw, 3rem);
+    margin: 0;
+  }
+
+  .grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  figure {
+    margin: 0;
+    background: var(--paper);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  figure:hover img {
+    transform: scale(1.05);
+  }
+
+  figcaption {
+    padding: 0.9rem 1rem 1.1rem;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+</style>

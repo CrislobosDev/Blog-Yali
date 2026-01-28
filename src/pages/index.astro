@@ -1,24 +1,18 @@
 ---
-import Layout from '../layout/Layout.astro'
-import Header from '../components/Header.astro'
-import Carrusel from '../components/Carrusel.astro'
-import Footer from '../components/Footer.astro'
-import About from '../components/About.astro'
-import AboutHumedal from '../components/AboutHumedal.astro'
-
-import Pictures from '../components/Pictures.astro'
-
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/ui/Header.astro";
+import Footer from "../components/ui/Footer.astro";
+import Carrusel from "../components/sections/Carrusel.astro";
+import About from "../components/sections/About.astro";
+import AboutHumedal from "../components/sections/AboutHumedal.astro";
+import Pictures from "../components/sections/Pictures.astro";
 ---
 
-<Layout>
-	<Header />
-	<Carrusel />
-	<About/>
-	<AboutHumedal/>
-	<Pictures/>
-	<Footer/>
+<Layout title="Yali Salvaje | Humedal El Yali">
+  <Header />
+  <Carrusel />
+  <About />
+  <AboutHumedal />
+  <Pictures />
+  <Footer />
 </Layout>
-
-
-
-

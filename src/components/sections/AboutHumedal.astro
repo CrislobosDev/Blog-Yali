@@ -1,0 +1,81 @@
+<section class="humedal">
+  <div class="container humedal-inner">
+    <div>
+      <p class="kicker">Patrimonio natural</p>
+      <h2>¿Qué es el Humedal El Yali?</h2>
+      <p>
+        El Humedal El Yali es un santuario de biodiversidad ubicado en la costa de la
+        Región de Valparaíso, Chile. Está compuesto por alrededor de 16 cuerpos de agua
+        entre lagunas, esteros, embalses y desembocaduras, con una extensión aproximada
+        de 11.000 hectáreas.
+      </p>
+      <p>
+        Sus límites son: al norte el estero Tricao, al sur el estero Maitenlahue, al este
+        la Ruta de la Fruta y al oeste el océano Pacífico. Es un sitio Ramsar de importancia
+        internacional para la conservación de aves migratorias y especies nativas.
+      </p>
+    </div>
+    <div class="mapa">
+      <img src="/mapaYali.jpeg" alt="Mapa del Humedal El Yali" loading="lazy" />
+      <p class="caption">Mapa publicado por el Instituto Geográfico Militar de Chile en 1954.</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .humedal {
+    background: var(--bg-dark);
+    color: #f0f4ee;
+    padding: 6rem 0;
+  }
+
+  .humedal-inner {
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+  }
+
+  .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.25rem;
+    font-size: 0.8rem;
+    margin: 0 0 0.5rem;
+    color: rgba(240, 244, 238, 0.7);
+  }
+
+  h2 {
+    font-family: "Alegreya", serif;
+    font-size: clamp(2rem, 3vw, 3rem);
+    margin: 0 0 1rem;
+  }
+
+  p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: rgba(240, 244, 238, 0.85);
+  }
+
+  .mapa {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+  }
+
+  .mapa img {
+    width: 100%;
+    border-radius: calc(var(--radius) - 4px);
+    box-shadow: var(--shadow);
+  }
+
+  .caption {
+    margin-top: 0.8rem;
+    font-size: 0.95rem;
+    color: rgba(240, 244, 238, 0.6);
+  }
+
+  @media (min-width: 960px) {
+    .humedal-inner {
+      grid-template-columns: 1.2fr 1fr;
+    }
+  }
+</style>

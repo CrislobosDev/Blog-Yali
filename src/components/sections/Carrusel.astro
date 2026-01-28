@@ -1,0 +1,122 @@
+---
+const images = [
+  { src: "/Xolmis pyrope.jpg", alt: "Xolmis pyrope" },
+  { src: "/Anairetes parulus.jpg", alt: "Anairetes parulus" },
+  { src: "/Colaptes pitius.jpg", alt: "Colaptes pitius" },
+  { src: "/Albufera-Garza Boyera.jpg", alt: "Garza Boyera" },
+  { src: "/Pelicano.jpg", alt: "Pelícano" },
+];
+---
+
+<section class="hero">
+  <div class="hero-overlay"></div>
+  <div class="hero-text container">
+    <p class="hero-kicker">Santuario de biodiversidad</p>
+    <h1>Bienvenido al Humedal El Yali</h1>
+    <p class="hero-subtitle">Un nido de conservación para la flora y fauna del litoral central.</p>
+  </div>
+
+  <div class="carousel" aria-hidden="true">
+    {images.map((image) => (
+      <img src={image.src} alt={image.alt} loading="lazy" />
+    ))}
+  </div>
+</section>
+
+<script>
+  const images = document.querySelectorAll(".carousel img");
+  let index = 0;
+
+  function showNextImage() {
+    images.forEach((img, i) => {
+      img.style.opacity = i === index ? "1" : "0";
+    });
+    index = (index + 1) % images.length;
+  }
+
+  if (images.length > 0 && window.matchMedia("(max-width: 959px)").matches) {
+    showNextImage();
+    setInterval(showNextImage, 3500);
+  }
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    color: #f6f9f4;
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(12, 18, 14, 0.65), rgba(12, 18, 14, 0.15));
+    z-index: 1;
+  }
+
+  .hero-text {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .hero-kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.3rem;
+    font-size: 0.85rem;
+    color: rgba(246, 249, 244, 0.8);
+    margin: 0;
+  }
+
+  h1 {
+    font-family: "Alegreya", serif;
+    font-size: clamp(2.6rem, 5vw, 4.5rem);
+    margin: 0;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    margin: 0;
+    max-width: 600px;
+    margin-inline: auto;
+  }
+
+  .carousel {
+    position: absolute;
+    inset: 0;
+  }
+
+  .carousel img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+  }
+
+  @media (min-width: 960px) {
+    .carousel {
+      display: flex;
+    }
+
+    .carousel img {
+      position: static;
+      width: 0;
+      flex-grow: 1;
+      opacity: 0.6;
+      transition: flex-grow 0.5s ease, opacity 0.5s ease;
+    }
+
+    .carousel img:hover {
+      flex-grow: 3;
+      opacity: 1;
+      filter: contrast(120%);
+    }
+  }
+</style>

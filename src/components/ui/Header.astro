@@ -1,0 +1,180 @@
+---
+const navItems = [
+  { href: "/blog", label: "Blog" },
+  { href: "/galeria", label: "Galería" },
+  { href: "/contacto", label: "Contacto" },
+];
+---
+
+<header class="site-header" data-menu="closed">
+  <div class="container header-inner">
+    <a class="brand" href="/" aria-label="Inicio">
+      <img src="/logo.png" alt="Yali Salvaje" width="200" height="68" />
+    </a>
+
+    <nav class="nav-desktop" aria-label="Principal">
+      {navItems.map((item) => (
+        <a href={item.href}>{item.label}</a>
+      ))}
+    </nav>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu-movil">
+      <span class="menu-text">Menú</span>
+      <span class="menu-icon" aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <nav class="nav-mobile" id="menu-movil" aria-label="Menú móvil">
+    {navItems.map((item) => (
+      <a href={item.href}>{item.label}</a>
+    ))}
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(18px);
+    background: color-mix(in srgb, var(--bg-dark), transparent 20%);
+    color: #f3f7f2;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 0;
+  }
+
+  .brand img {
+    width: clamp(140px, 18vw, 220px);
+    height: auto;
+  }
+
+  .nav-desktop {
+    display: none;
+    gap: 2rem;
+    align-items: center;
+    font-weight: 500;
+  }
+
+  .nav-desktop a,
+  .nav-mobile a {
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+  }
+
+  .nav-desktop a::after,
+  .nav-mobile a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -0.3rem;
+    width: 0;
+    height: 2px;
+    background: var(--accent-2);
+    transition: width 0.3s ease;
+  }
+
+  .nav-desktop a:hover::after,
+  .nav-mobile a:hover::after {
+    width: 100%;
+  }
+
+  .menu-toggle {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: inherit;
+    padding: 0.6rem 1rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+  }
+
+  .menu-icon {
+    width: 20px;
+    height: 2px;
+    background: currentColor;
+    display: block;
+    position: relative;
+  }
+
+  .menu-icon::before,
+  .menu-icon::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 20px;
+    height: 2px;
+    background: currentColor;
+    transition: transform 0.3s ease;
+  }
+
+  .menu-icon::before {
+    top: -6px;
+  }
+
+  .menu-icon::after {
+    top: 6px;
+  }
+
+  .nav-mobile {
+    display: grid;
+    gap: 1rem;
+    padding: 0 1.5rem 1.5rem;
+    transform-origin: top;
+    transform: scaleY(0);
+    height: 0;
+    overflow: hidden;
+    transition: transform 0.3s ease, height 0.3s ease;
+  }
+
+  .site-header[data-menu="open"] .nav-mobile {
+    transform: scaleY(1);
+    height: auto;
+  }
+
+  .site-header[data-menu="open"] .menu-icon {
+    background: transparent;
+  }
+
+  .site-header[data-menu="open"] .menu-icon::before {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .site-header[data-menu="open"] .menu-icon::after {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  @media (min-width: 840px) {
+    .nav-desktop {
+      display: flex;
+    }
+
+    .menu-toggle,
+    .nav-mobile {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const header = document.querySelector(".site-header");
+  const toggle = header?.querySelector(".menu-toggle");
+  const mobileNav = header?.querySelector(".nav-mobile");
+
+  if (toggle && mobileNav && header) {
+    toggle.addEventListener("click", () => {
+      const isOpen = header.getAttribute("data-menu") === "open";
+      header.setAttribute("data-menu", isOpen ? "closed" : "open");
+      toggle.setAttribute("aria-expanded", String(!isOpen));
+    });
+  }
+</script>

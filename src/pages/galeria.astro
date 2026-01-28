@@ -1,62 +1,106 @@
 ---
-// src/pages/galeria.astro
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/ui/Header.astro";
+import Footer from "../components/ui/Footer.astro";
+import { supabase } from "../lib/supabaseClient";
 
-// CORRECCIÓN: La ruta correcta a tu Layout.astro es '../layout/Layout.astro' (minúsculas).
-import Layout from "../layout/Layout.astro"; 
-
-// Estos ya estaban correctos (asumiendo que los usas en el Layout y Header/Footer)
-import Header from "../components/Header.astro";
-import Footer from '../components/Footer.astro';
-
-// La ruta a tu cliente de Supabase es correcta:
-import { supabase } from '../lib/supabaseClient'; 
-
-
-// 2. Consultar la tabla de imágenes
-// ¡Asegúrate de que el nombre de tu tabla sea exactamente 'imagenes' o 'galeria_fotos'!
 const { data: fotos, error } = await supabase
-  .from('imagenes') 
-  .select('id, url_publica, alt_text, descripcion') 
-  .order('created_at', { ascending: false }); 
-
-  console.log("Error de Supabase:", error);
-  console.log("Datos recibidos:", fotos); 
+  .from("imagenes")
+  .select("id, url_publica, alt_text, descripcion")
+  .order("created_at", { ascending: false });
 
 if (error) {
-  // Es buena práctica lanzar un error visible en desarrollo
   console.error("Error al cargar la galería:", error);
-  // Opcionalmente, puedes mostrar este mensaje de error en el HTML también.
 }
 
-const imagenesGaleria = fotos || []; 
+const imagenesGaleria = fotos ?? [];
 ---
-<Layout title="Galería Fotográfica | Yali Salvaje">
-  <main class="container">
-    <h1>Galería del Humedal El Yali 📸</h1>
-    <p>Una colección de la flora y fauna de la 5ta Región de Chile.</p>
-    
-    <div class="grid-galeria">
-      {imagenesGaleria.length === 0 ? (
-        <p>Aún no hay fotos en la galería.</p>
-      ) : (
-        imagenesGaleria.map((foto) => (
-          <figure class="foto-item">
-            <img 
-              src={foto.url_publica} 
-              alt={foto.alt_text} 
-              loading="lazy"
-              width="500" 
-              height="350"
-            />
-            {foto.descripcion && <figcaption>{foto.descripcion}</figcaption>}
-          </figure>
-        ))
-      )}
+
+<Layout title="Galería | Yali Salvaje">
+  <Header />
+  <section class="page">
+    <div class="container">
+      <p class="kicker">Registro fotográfico</p>
+      <h1>Galería del Humedal El Yali</h1>
+      <p class="lead">Una colección de la flora y fauna de la 5ta Región de Chile.</p>
+
+      <div class="grid-galeria">
+        {imagenesGaleria.length === 0 ? (
+          <p class="empty">Aún no hay fotos en la galería.</p>
+        ) : (
+          imagenesGaleria.map((foto) => (
+            <figure class="foto-item" key={foto.id}>
+              <img
+                src={foto.url_publica}
+                alt={foto.alt_text ?? "Fotografía del humedal"}
+                loading="lazy"
+              />
+              {(foto.descripcion || foto.alt_text) && (
+                <figcaption>{foto.descripcion ?? foto.alt_text}</figcaption>
+              )}
+            </figure>
+          ))
+        )}
+      </div>
     </div>
-  </main>
-  
-  </Layout>
+  </section>
+  <Footer />
+</Layout>
 
 <style>
-  /* ... (Tus estilos CSS) ... */
+  .page {
+    padding: 7rem 0 6rem;
+  }
+
+  h1 {
+    font-family: "Alegreya", serif;
+    font-size: clamp(2.5rem, 4vw, 4rem);
+    margin: 0 0 0.75rem;
+  }
+
+  .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.25rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin: 0 0 0.5rem;
+  }
+
+  .lead {
+    font-size: 1.1rem;
+    max-width: 640px;
+  }
+
+  .grid-galeria {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    margin-top: 2.5rem;
+  }
+
+  .foto-item {
+    margin: 0;
+    background: var(--paper);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .foto-item img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .foto-item figcaption {
+    padding: 0.9rem 1rem 1.1rem;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+
+  .empty {
+    font-size: 1.05rem;
+    color: var(--muted);
+  }
 </style>

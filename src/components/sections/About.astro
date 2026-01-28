@@ -1,0 +1,69 @@
+<section class="about">
+  <div class="container about-inner">
+    <div>
+      <p class="kicker">Proyecto comunitario</p>
+      <h2>¿Qué es Yali Salvaje?</h2>
+      <p>
+        Yali Salvaje es un proyecto de conservación y educación ambiental que busca
+        proteger el <strong>Humedal El Yali</strong> y su biodiversidad. A través de actividades
+        de turismo sostenible, investigación científica y educación ambiental, promovemos
+        la conservación de este ecosistema único en la Región de Valparaíso, Chile.
+      </p>
+      <p>
+        En esta página encontrarás información sobre la flora y fauna del humedal, además de
+        noticias y registros fotográficos para visibilizar su riqueza natural.
+      </p>
+    </div>
+    <div class="about-logo">
+      <img src="/logo.png" alt="Logotipo Yali Salvaje" width="220" height="80" />
+    </div>
+  </div>
+</section>
+
+<style>
+  .about {
+    background: var(--paper);
+    padding: 6rem 0;
+  }
+
+  .about-inner {
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+  }
+
+  .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.25rem;
+    font-size: 0.8rem;
+    margin: 0 0 0.5rem;
+    color: var(--muted);
+  }
+
+  h2 {
+    font-family: "Alegreya", serif;
+    font-size: clamp(2rem, 3vw, 3rem);
+    margin: 0 0 1rem;
+  }
+
+  p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .about-logo {
+    background: var(--paper-2);
+    border-radius: var(--radius);
+    padding: 2rem;
+    display: grid;
+    place-items: center;
+    box-shadow: var(--shadow);
+  }
+
+  @media (min-width: 900px) {
+    .about-inner {
+      grid-template-columns: 2fr 1fr;
+    }
+  }
+</style>
