@@ -32,7 +32,7 @@ import Footer from "../components/ui/Footer.astro";
 </Layout>
 
 <script type="module">
-  import { supabase } from "../lib/supabaseClient";
+  import { supabase } from "../lib/supabaseClient.js";
 
   const message = document.getElementById("login-message");
   const form = document.getElementById("login-form");
