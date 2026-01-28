@@ -4,50 +4,64 @@ import Header from "../components/ui/Header.astro";
 import Footer from "../components/ui/Footer.astro";
 ---
 
-<Layout title="Contacto | Yali Salvaje">
+<Layout title="Login | Yali Salvaje">
   <Header />
   <section class="page">
-    <div class="container contact">
+    <div class="container login">
       <div>
-        <p class="kicker">Conversemos</p>
-        <h1>Contacto</h1>
-        <p class="lead">
-          Envíanos tus consultas o ideas para actividades en el humedal. Te responderemos pronto.
-        </p>
+        <p class="kicker">Acceso restringido</p>
+        <h1>Ingresar al panel</h1>
+        <p class="lead">Inicia sesión con tu cuenta de administrador para gestionar el blog y la galería.</p>
       </div>
 
-      <form
-        class="form"
-        action="mailto:cristianvillalobosvv@gmail.com"
-        method="post"
-        enctype="text/plain"
-      >
-        <label>
-          Nombre
-          <input type="text" name="nombre" placeholder="Tu nombre" required />
-        </label>
+      <form class="form" id="login-form" autocomplete="off">
         <label>
           Email
-          <input type="email" name="email" placeholder="tucorreo@email.com" required />
+          <input type="email" name="email" placeholder="correo@dominio.com" required />
         </label>
         <label>
-          Mensaje
-          <textarea name="mensaje" rows="5" placeholder="Escribe tu consulta" required></textarea>
+          Contraseña
+          <input type="password" name="password" placeholder="••••••••" required />
         </label>
-        <button type="submit">Enviar consulta</button>
-        <p class="note">Se abrirá tu cliente de correo para enviar el mensaje.</p>
+        <button type="submit">Ingresar</button>
+        <p class="note" id="login-message"></p>
       </form>
     </div>
   </section>
   <Footer />
 </Layout>
 
+<script type="module">
+  import { supabase } from "../lib/supabaseClient";
+
+  const message = document.getElementById("login-message");
+  const form = document.getElementById("login-form");
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const formData = new FormData(form);
+    const email = String(formData.get("email") ?? "");
+    const password = String(formData.get("password") ?? "");
+
+    if (message) message.textContent = "Verificando...";
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      if (message) message.textContent = "No se pudo iniciar sesión. Revisa tus credenciales.";
+      return;
+    }
+
+    document.cookie = "admin_session=1; Path=/; SameSite=Lax";
+    window.location.href = "/admin";
+  });
+</script>
+
 <style>
   .page {
     padding: 7rem 0 6rem;
   }
 
-  .contact {
+  .login {
     display: grid;
     gap: 3rem;
     align-items: start;
@@ -88,8 +102,7 @@ import Footer from "../components/ui/Footer.astro";
     color: var(--bg-ink);
   }
 
-  input,
-  textarea {
+  input {
     padding: 0.75rem 0.9rem;
     border-radius: 12px;
     border: 1px solid rgba(0, 0, 0, 0.12);
@@ -117,10 +130,11 @@ import Footer from "../components/ui/Footer.astro";
     margin: 0;
     font-size: 0.9rem;
     color: var(--muted);
+    min-height: 1.2rem;
   }
 
   @media (min-width: 900px) {
-    .contact {
+    .login {
       grid-template-columns: 1fr 1fr;
     }
   }

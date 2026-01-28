@@ -15,4 +15,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Las variables de entorno de Supabase no están configuradas correctamente.");
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const storage = typeof window !== "undefined" ? window.sessionStorage : undefined;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false,
+    storage,
+  },
+});

@@ -22,11 +22,16 @@ const imagenesGaleria = fotos ?? [];
     <div class="container">
       <p class="kicker">Registro fotográfico</p>
       <h1>Galería del Humedal El Yali</h1>
-      <p class="lead">Una colección de la flora y fauna de la 5ta Región de Chile.</p>
+      <p class="lead">
+        Las imágenes se publican desde el panel de administración y se mostrarán aquí.
+      </p>
 
       <div class="grid-galeria">
         {imagenesGaleria.length === 0 ? (
-          <p class="empty">Aún no hay fotos en la galería.</p>
+          <div class="empty">
+            <p>Aún no hay fotos en la galería.</p>
+            <p>Muy pronto compartiremos nuevas capturas del humedal.</p>
+          </div>
         ) : (
           imagenesGaleria.map((foto) => (
             <figure class="foto-item" key={foto.id}>
@@ -100,7 +105,14 @@ const imagenesGaleria = fotos ?? [];
   }
 
   .empty {
-    font-size: 1.05rem;
+    background: var(--paper);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
     color: var(--muted);
+  }
+
+  .empty p {
+    margin: 0 0 0.5rem;
   }
 </style>

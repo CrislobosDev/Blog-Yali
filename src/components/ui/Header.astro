@@ -1,9 +1,14 @@
 ---
 const navItems = [
+  { href: "/", label: "Inicio" },
   { href: "/blog", label: "Blog" },
   { href: "/galeria", label: "Galería" },
   { href: "/contacto", label: "Contacto" },
 ];
+
+const currentPath = Astro.url.pathname;
+const isActive = (href) => (href === "/" ? currentPath === "/" : currentPath.startsWith(href));
+const isAdminVisible = Astro.cookies.has("admin_session");
 ---
 
 <header class="site-header" data-menu="closed">
@@ -14,8 +19,24 @@ const navItems = [
 
     <nav class="nav-desktop" aria-label="Principal">
       {navItems.map((item) => (
-        <a href={item.href}>{item.label}</a>
+        <a
+          href={item.href}
+          class={isActive(item.href) ? "is-active" : undefined}
+          aria-current={isActive(item.href) ? "page" : undefined}
+        >
+          {item.label}
+        </a>
       ))}
+      {isAdminVisible && (
+        <a
+          href="/admin"
+          class={isActive("/admin") ? "is-active" : undefined}
+          aria-current={isActive("/admin") ? "page" : undefined}
+          data-admin-link="true"
+        >
+          Admin
+        </a>
+      )}
     </nav>
 
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu-movil">
@@ -26,8 +47,24 @@ const navItems = [
 
   <nav class="nav-mobile" id="menu-movil" aria-label="Menú móvil">
     {navItems.map((item) => (
-      <a href={item.href}>{item.label}</a>
+      <a
+        href={item.href}
+        class={isActive(item.href) ? "is-active" : undefined}
+        aria-current={isActive(item.href) ? "page" : undefined}
+      >
+        {item.label}
+      </a>
     ))}
+    {isAdminVisible && (
+      <a
+        href="/admin"
+        class={isActive("/admin") ? "is-active" : undefined}
+        aria-current={isActive("/admin") ? "page" : undefined}
+        data-admin-link="true"
+      >
+        Admin
+      </a>
+    )}
   </nav>
 </header>
 
@@ -82,8 +119,15 @@ const navItems = [
   }
 
   .nav-desktop a:hover::after,
-  .nav-mobile a:hover::after {
+  .nav-mobile a:hover::after,
+  .nav-desktop a.is-active::after,
+  .nav-mobile a.is-active::after {
     width: 100%;
+  }
+
+  .nav-desktop a.is-active,
+  .nav-mobile a.is-active {
+    color: var(--accent-2);
   }
 
   .menu-toggle {
@@ -169,6 +213,7 @@ const navItems = [
   const header = document.querySelector(".site-header");
   const toggle = header?.querySelector(".menu-toggle");
   const mobileNav = header?.querySelector(".nav-mobile");
+  const adminLinks = header?.querySelectorAll("[data-admin-link='true']");
 
   if (toggle && mobileNav && header) {
     toggle.addEventListener("click", () => {
@@ -176,5 +221,15 @@ const navItems = [
       header.setAttribute("data-menu", isOpen ? "closed" : "open");
       toggle.setAttribute("aria-expanded", String(!isOpen));
     });
+  }
+
+  if (adminLinks && adminLinks.length > 0) {
+    const hasAdminCookie = document.cookie
+      .split(";")
+      .map((part) => part.trim())
+      .some((part) => part.startsWith("admin_session="));
+    if (!hasAdminCookie) {
+      adminLinks.forEach((link) => link.remove());
+    }
   }
 </script>

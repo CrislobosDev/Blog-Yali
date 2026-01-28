@@ -2,15 +2,63 @@
 import Layout from "../layouts/Layout.astro";
 import Header from "../components/ui/Header.astro";
 import Footer from "../components/ui/Footer.astro";
+import { supabase } from "../lib/supabaseClient";
+
+const { data: posts, error } = await supabase
+  .from("blog_posts")
+  .select("id, title, excerpt, image_url, category, published_at")
+  .order("published_at", { ascending: false });
+
+if (error) {
+  console.error("Error al cargar el blog:", error);
+}
+
+const blogPosts = posts ?? [];
 ---
 
 <Layout title="Blog | Yali Salvaje">
   <Header />
   <section class="page">
     <div class="container">
-      <p class="kicker">Historias del humedal</p>
-      <h1>Blog</h1>
-      <p class="lead">Pronto encontrarás entradas sobre conservación, avistamiento y actividades comunitarias.</p>
+      <p class="kicker">Noticias y curiosidades</p>
+      <h1>Blog del Humedal</h1>
+      <p class="lead">
+        Aquí podrás encontrar artículos con imágenes y texto sobre flora, fauna y actividades
+        de conservación. El contenido se publica desde el panel de administración.
+      </p>
+
+      <div class="grid">
+        {blogPosts.length === 0 ? (
+          <div class="empty">
+            <p>Aún no hay entradas publicadas.</p>
+            <p>Vuelve pronto para leer nuevas historias del humedal.</p>
+          </div>
+        ) : (
+          blogPosts.map((post) => (
+            <article class="card" key={post.id}>
+              {post.image_url && (
+                <div class="card-image">
+                  <img src={post.image_url} alt={post.title} loading="lazy" />
+                </div>
+              )}
+              <div class="card-body">
+                {post.category && <p class="tag">{post.category}</p>}
+                <h2>{post.title}</h2>
+                {post.excerpt && <p class="excerpt">{post.excerpt}</p>}
+                {post.published_at && (
+                  <p class="date">
+                    {new Date(post.published_at).toLocaleDateString("es-CL", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                )}
+              </div>
+            </article>
+          ))
+        )}
+      </div>
     </div>
   </section>
   <Footer />
@@ -24,7 +72,13 @@ import Footer from "../components/ui/Footer.astro";
   h1 {
     font-family: "Alegreya", serif;
     font-size: clamp(2.5rem, 4vw, 4rem);
-    margin: 0 0 1rem;
+    margin: 0 0 0.75rem;
+  }
+
+  h2 {
+    font-family: "Alegreya", serif;
+    font-size: 1.6rem;
+    margin: 0 0 0.6rem;
   }
 
   .kicker {
@@ -37,6 +91,64 @@ import Footer from "../components/ui/Footer.astro";
 
   .lead {
     font-size: 1.1rem;
-    max-width: 640px;
+    max-width: 700px;
+  }
+
+  .grid {
+    display: grid;
+    gap: 1.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    margin-top: 2.5rem;
+  }
+
+  .card {
+    background: var(--paper);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    display: grid;
+  }
+
+  .card-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+
+  .card-body {
+    padding: 1.2rem 1.4rem 1.6rem;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    text-transform: uppercase;
+    letter-spacing: 0.2rem;
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .excerpt {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .date {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .empty {
+    background: var(--paper);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    color: var(--muted);
+  }
+
+  .empty p {
+    margin: 0 0 0.5rem;
   }
 </style>

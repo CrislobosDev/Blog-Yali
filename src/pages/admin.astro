@@ -1,0 +1,870 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/ui/Header.astro";
+import Footer from "../components/ui/Footer.astro";
+---
+
+<Layout title="Administración | Yali Salvaje">
+  <Header />
+  <section class="page" data-auth="checking">
+    <div class="container">
+      <p class="kicker">Panel de administración</p>
+      <h1>Gestión de contenidos</h1>
+      <p class="lead">
+        Desde aquí podrás subir imágenes y entradas para el blog y la galería. Este panel ya
+        se conecta a Supabase para guardar archivos y datos.
+      </p>
+
+      <div class="auth-banner" data-state="checking">
+        <p>Verificando sesión...</p>
+      </div>
+
+      <div class="tabs" data-tab="blog">
+        <div class="tab-list" role="tablist" aria-label="Secciones de administración">
+          <button class="tab" type="button" role="tab" aria-selected="true" data-tab="blog">
+            Blog
+          </button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-tab="galeria">
+            Galería
+          </button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-tab="perfil">
+            Perfil
+          </button>
+        </div>
+
+        <div class="tab-panel" role="tabpanel" data-panel="blog">
+          <div class="panel-header">
+            <h2>Publicar entrada</h2>
+            <div class="panel-actions">
+              <button type="button" class="secondary" id="blog-cancel" hidden>Cancelar edición</button>
+            </div>
+          </div>
+          <form class="form" id="blog-form" autocomplete="off">
+            <input type="hidden" name="post_id" />
+            <label>
+              Título
+              <input type="text" name="titulo" placeholder="Título del artículo" required />
+            </label>
+            <label>
+              Categoría
+              <input type="text" name="categoria" placeholder="Ej: Biodiversidad" required />
+            </label>
+            <label>
+              Extracto
+              <textarea name="extracto" rows="3" placeholder="Resumen breve" required></textarea>
+            </label>
+            <label>
+              Contenido
+              <textarea name="contenido" rows="8" placeholder="Texto completo de la entrada" required></textarea>
+            </label>
+            <label>
+              Imagen destacada
+              <input type="file" name="imagen" accept="image/*" />
+            </label>
+            <div class="preview">
+              <div class="preview-media">
+                <img id="blog-preview-image" alt="Previsualización de imagen" />
+              </div>
+              <div>
+                <p class="tag" id="blog-preview-category">Sin categoría</p>
+                <p class="preview-title" id="blog-preview-title">Título de la entrada</p>
+                <p class="preview-excerpt" id="blog-preview-excerpt">Aquí aparecerá el extracto.</p>
+              </div>
+            </div>
+            <div class="actions">
+              <button type="submit" id="blog-submit">Publicar</button>
+            </div>
+            <p class="note" id="blog-message"></p>
+          </form>
+
+          <div class="list" id="blog-list"></div>
+        </div>
+
+        <div class="tab-panel" role="tabpanel" hidden data-panel="galeria">
+          <div class="panel-header">
+            <h2>Subir imágenes a la galería</h2>
+            <div class="panel-actions">
+              <button type="button" class="secondary" id="gallery-cancel" hidden>Cancelar edición</button>
+            </div>
+          </div>
+          <form class="form" id="gallery-form" autocomplete="off">
+            <input type="hidden" name="image_id" />
+            <label>
+              Título o descripción
+              <input type="text" name="titulo" placeholder="Descripción corta" required />
+            </label>
+            <label>
+              Texto alternativo
+              <input type="text" name="alt" placeholder="Texto alternativo para accesibilidad" required />
+            </label>
+            <label>
+              Imagen
+              <input type="file" name="imagen" accept="image/*" />
+            </label>
+            <div class="preview">
+              <div class="preview-media">
+                <img id="gallery-preview-image" alt="Previsualización de imagen" />
+              </div>
+              <div>
+                <p class="preview-title" id="gallery-preview-title">Descripción de la imagen</p>
+                <p class="preview-excerpt" id="gallery-preview-alt">Texto alternativo</p>
+              </div>
+            </div>
+            <div class="actions">
+              <button type="submit" id="gallery-submit">Subir imagen</button>
+            </div>
+            <p class="note" id="gallery-message"></p>
+          </form>
+
+          <div class="list" id="gallery-list"></div>
+        </div>
+
+        <div class="tab-panel" role="tabpanel" hidden data-panel="perfil">
+          <h2>Cuenta</h2>
+          <p class="note">Sesión iniciada. Puedes cerrar sesión aquí.</p>
+          <button type="button" class="secondary" id="logout">Cerrar sesión</button>
+        </div>
+      </div>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+  </section>
+  <Footer />
+</Layout>
+
+<script type="module">
+  import { supabase } from "../lib/supabaseClient";
+
+  const STORAGE_BUCKET = "media";
+  const BLOG_FOLDER = "blog";
+  const GALLERY_FOLDER = "galeria";
+
+  const banner = document.querySelector(".auth-banner");
+  const section = document.querySelector(".page");
+  const logoutButton = document.getElementById("logout");
+
+  const blogForm = document.getElementById("blog-form");
+  const blogMessage = document.getElementById("blog-message");
+  const blogList = document.getElementById("blog-list");
+  const blogSubmit = document.getElementById("blog-submit");
+  const blogCancel = document.getElementById("blog-cancel");
+  const blogPreviewImage = document.getElementById("blog-preview-image");
+  const blogPreviewTitle = document.getElementById("blog-preview-title");
+  const blogPreviewExcerpt = document.getElementById("blog-preview-excerpt");
+  const blogPreviewCategory = document.getElementById("blog-preview-category");
+
+  const galleryForm = document.getElementById("gallery-form");
+  const galleryMessage = document.getElementById("gallery-message");
+  const galleryList = document.getElementById("gallery-list");
+  const gallerySubmit = document.getElementById("gallery-submit");
+  const galleryCancel = document.getElementById("gallery-cancel");
+  const galleryPreviewImage = document.getElementById("gallery-preview-image");
+  const galleryPreviewTitle = document.getElementById("gallery-preview-title");
+  const galleryPreviewAlt = document.getElementById("gallery-preview-alt");
+
+  const { data } = await supabase.auth.getSession();
+
+  const setMessage = (el, text, type = "info") => {
+    if (!el) return;
+    el.textContent = text;
+    el.setAttribute("data-status", type);
+    if (text) showToast(text, type);
+  };
+
+  const toast = document.getElementById("toast");
+  let toastTimeout = null;
+
+  const showToast = (text, type = "info") => {
+    if (!toast) return;
+    toast.textContent = text;
+    toast.setAttribute("data-status", type);
+    toast.classList.add("is-visible");
+    if (toastTimeout) window.clearTimeout(toastTimeout);
+    toastTimeout = window.setTimeout(() => {
+      toast.classList.remove("is-visible");
+    }, 2400);
+  };
+
+  if (!data?.session) {
+    window.location.href = "/login";
+  } else {
+    if (banner) {
+      banner.setAttribute("data-state", "ready");
+      banner.textContent = `Sesión iniciada: ${data.session.user.email}`;
+    }
+    if (section) section.setAttribute("data-auth", "ready");
+  }
+
+  logoutButton?.addEventListener("click", async () => {
+    await supabase.auth.signOut();
+    document.cookie = "admin_session=; Path=/; Max-Age=0; SameSite=Lax";
+    window.location.href = "/login";
+  });
+
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (!session) {
+      document.cookie = "admin_session=; Path=/; Max-Age=0; SameSite=Lax";
+      if (banner) {
+        banner.setAttribute("data-state", "expired");
+        banner.textContent = "Sesión expirada. Redirigiendo al login...";
+      }
+      showToast("Sesión expirada. Redirigiendo al login...", "error");
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1200);
+    }
+  });
+
+  const buildFilePath = (folder, file) => {
+    const safeName = file.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9.-]/g, "");
+    return `${folder}/${Date.now()}-${safeName}`;
+  };
+
+  const extractPathFromPublicUrl = (url) => {
+    const marker = `/storage/v1/object/public/${STORAGE_BUCKET}/`;
+    const index = url.indexOf(marker);
+    if (index === -1) return null;
+    return url.slice(index + marker.length);
+  };
+
+  const removeImageByUrl = async (url) => {
+    if (!url) return;
+    const path = extractPathFromPublicUrl(url);
+    if (!path) return;
+    await supabase.storage.from(STORAGE_BUCKET).remove([path]);
+  };
+
+  const uploadImage = async (file, folder) => {
+    const path = buildFilePath(folder, file);
+    const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(path, file, {
+      cacheControl: "3600",
+      upsert: false,
+    });
+    if (error) throw error;
+
+    const { data: publicData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+    return publicData.publicUrl;
+  };
+
+  const resetBlogForm = () => {
+    blogForm?.reset();
+    blogForm?.querySelector("[name='post_id']")?.setAttribute("value", "");
+    if (blogSubmit) blogSubmit.textContent = "Publicar";
+    if (blogCancel) blogCancel.hidden = true;
+    blogForm?.removeAttribute("data-image");
+    if (blogPreviewImage) blogPreviewImage.removeAttribute("src");
+    if (blogPreviewTitle) blogPreviewTitle.textContent = "Título de la entrada";
+    if (blogPreviewExcerpt) blogPreviewExcerpt.textContent = "Aquí aparecerá el extracto.";
+    if (blogPreviewCategory) blogPreviewCategory.textContent = "Sin categoría";
+  };
+
+  const resetGalleryForm = () => {
+    galleryForm?.reset();
+    galleryForm?.querySelector("[name='image_id']")?.setAttribute("value", "");
+    if (gallerySubmit) gallerySubmit.textContent = "Subir imagen";
+    if (galleryCancel) galleryCancel.hidden = true;
+    galleryForm?.removeAttribute("data-image");
+    if (galleryPreviewImage) galleryPreviewImage.removeAttribute("src");
+    if (galleryPreviewTitle) galleryPreviewTitle.textContent = "Descripción de la imagen";
+    if (galleryPreviewAlt) galleryPreviewAlt.textContent = "Texto alternativo";
+  };
+
+  const previewFile = (file, target) => {
+    if (!(file instanceof File) || file.size === 0) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (target) target.setAttribute("src", String(reader.result));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  blogForm?.querySelector("[name='imagen']")?.addEventListener("change", (event) => {
+    const input = event.target;
+    if (input instanceof HTMLInputElement && input.files && input.files[0]) {
+      previewFile(input.files[0], blogPreviewImage);
+    }
+  });
+
+  galleryForm?.querySelector("[name='imagen']")?.addEventListener("change", (event) => {
+    const input = event.target;
+    if (input instanceof HTMLInputElement && input.files && input.files[0]) {
+      previewFile(input.files[0], galleryPreviewImage);
+    }
+  });
+
+  blogForm?.querySelector("[name='titulo']")?.addEventListener("input", (event) => {
+    const value = event.target?.value ?? "";
+    if (blogPreviewTitle) blogPreviewTitle.textContent = value || "Título de la entrada";
+  });
+
+  blogForm?.querySelector("[name='extracto']")?.addEventListener("input", (event) => {
+    const value = event.target?.value ?? "";
+    if (blogPreviewExcerpt) blogPreviewExcerpt.textContent = value || "Aquí aparecerá el extracto.";
+  });
+
+  blogForm?.querySelector("[name='categoria']")?.addEventListener("input", (event) => {
+    const value = event.target?.value ?? "";
+    if (blogPreviewCategory) blogPreviewCategory.textContent = value || "Sin categoría";
+  });
+
+  galleryForm?.querySelector("[name='titulo']")?.addEventListener("input", (event) => {
+    const value = event.target?.value ?? "";
+    if (galleryPreviewTitle) galleryPreviewTitle.textContent = value || "Descripción de la imagen";
+  });
+
+  galleryForm?.querySelector("[name='alt']")?.addEventListener("input", (event) => {
+    const value = event.target?.value ?? "";
+    if (galleryPreviewAlt) galleryPreviewAlt.textContent = value || "Texto alternativo";
+  });
+
+  const formatDate = (value) => {
+    if (!value) return "Sin fecha";
+    return new Date(value).toLocaleDateString("es-CL", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  const loadBlogPosts = async () => {
+    const { data: posts, error } = await supabase
+      .from("blog_posts")
+      .select("id, title, excerpt, image_url, category, published_at, content")
+      .order("published_at", { ascending: false });
+
+    if (error || !blogList) return;
+    blogList.innerHTML = "";
+
+    if (!posts || posts.length === 0) {
+      blogList.innerHTML = "<p class='note'>Aún no hay entradas publicadas.</p>";
+      return;
+    }
+
+    posts.forEach((post) => {
+      const card = document.createElement("article");
+      card.className = "list-card";
+
+      card.innerHTML = `
+        <div>
+          <p class="tag">${post.category ?? "Sin categoría"}</p>
+          <h3>${post.title}</h3>
+          <p class="excerpt">${post.excerpt ?? ""}</p>
+          <p class="meta">${formatDate(post.published_at)}</p>
+        </div>
+        <div class="list-actions">
+          <button type="button" data-action="edit" data-id="${post.id}">Editar</button>
+          <button type="button" class="danger" data-action="delete" data-id="${post.id}">Eliminar</button>
+        </div>
+      `;
+
+      card.querySelector("[data-action='edit']")?.addEventListener("click", () => {
+        blogForm?.querySelector("[name='post_id']")?.setAttribute("value", String(post.id));
+        const titleInput = blogForm?.querySelector("[name='titulo']");
+        const categoryInput = blogForm?.querySelector("[name='categoria']");
+        const excerptInput = blogForm?.querySelector("[name='extracto']");
+        const contentInput = blogForm?.querySelector("[name='contenido']");
+
+        if (titleInput) titleInput.value = post.title ?? "";
+        if (categoryInput) categoryInput.value = post.category ?? "";
+        if (excerptInput) excerptInput.value = post.excerpt ?? "";
+        if (contentInput) contentInput.value = post.content ?? "";
+
+        blogForm?.setAttribute("data-image", post.image_url ?? "");
+        if (blogPreviewImage) {
+          if (post.image_url) blogPreviewImage.setAttribute("src", post.image_url);
+          else blogPreviewImage.removeAttribute("src");
+        }
+        if (blogPreviewTitle) blogPreviewTitle.textContent = post.title ?? "Título de la entrada";
+        if (blogPreviewExcerpt) blogPreviewExcerpt.textContent = post.excerpt ?? "Aquí aparecerá el extracto.";
+        if (blogPreviewCategory) blogPreviewCategory.textContent = post.category ?? "Sin categoría";
+        if (blogSubmit) blogSubmit.textContent = "Actualizar";
+        if (blogCancel) blogCancel.hidden = false;
+        blogForm?.scrollIntoView({ behavior: "smooth" });
+      });
+
+      card.querySelector("[data-action='delete']")?.addEventListener("click", async () => {
+        if (!confirm("¿Eliminar esta entrada?")) return;
+        if (post.image_url) await removeImageByUrl(post.image_url);
+        await supabase.from("blog_posts").delete().eq("id", post.id);
+        loadBlogPosts();
+      });
+
+      blogList.appendChild(card);
+    });
+  };
+
+  const loadGalleryItems = async () => {
+    const { data: items, error } = await supabase
+      .from("imagenes")
+      .select("id, url_publica, alt_text, descripcion, created_at")
+      .order("created_at", { ascending: false });
+
+    if (error || !galleryList) return;
+    galleryList.innerHTML = "";
+
+    if (!items || items.length === 0) {
+      galleryList.innerHTML = "<p class='note'>Aún no hay imágenes publicadas.</p>";
+      return;
+    }
+
+    items.forEach((item) => {
+      const card = document.createElement("article");
+      card.className = "list-card";
+
+      card.innerHTML = `
+        <div class="thumb">
+          <img src="${item.url_publica}" alt="${item.alt_text ?? "Imagen"}" />
+        </div>
+        <div>
+          <h3>${item.descripcion ?? "Sin descripción"}</h3>
+          <p class="excerpt">${item.alt_text ?? ""}</p>
+          <p class="meta">${formatDate(item.created_at)}</p>
+        </div>
+        <div class="list-actions">
+          <button type="button" data-action="edit" data-id="${item.id}">Editar</button>
+          <button type="button" class="danger" data-action="delete" data-id="${item.id}">Eliminar</button>
+        </div>
+      `;
+
+      card.querySelector("[data-action='edit']")?.addEventListener("click", () => {
+        galleryForm?.querySelector("[name='image_id']")?.setAttribute("value", String(item.id));
+        const titleInput = galleryForm?.querySelector("[name='titulo']");
+        const altInput = galleryForm?.querySelector("[name='alt']");
+        if (titleInput) titleInput.value = item.descripcion ?? "";
+        if (altInput) altInput.value = item.alt_text ?? "";
+        galleryForm?.setAttribute("data-image", item.url_publica ?? "");
+        if (galleryPreviewImage) {
+          if (item.url_publica) galleryPreviewImage.setAttribute("src", item.url_publica);
+          else galleryPreviewImage.removeAttribute("src");
+        }
+        if (galleryPreviewTitle) galleryPreviewTitle.textContent = item.descripcion ?? "Descripción de la imagen";
+        if (galleryPreviewAlt) galleryPreviewAlt.textContent = item.alt_text ?? "Texto alternativo";
+        if (gallerySubmit) gallerySubmit.textContent = "Actualizar";
+        if (galleryCancel) galleryCancel.hidden = false;
+        galleryForm?.scrollIntoView({ behavior: "smooth" });
+      });
+
+      card.querySelector("[data-action='delete']")?.addEventListener("click", async () => {
+        if (!confirm("¿Eliminar esta imagen?")) return;
+        await removeImageByUrl(item.url_publica);
+        await supabase.from("imagenes").delete().eq("id", item.id);
+        loadGalleryItems();
+      });
+
+      galleryList.appendChild(card);
+    });
+  };
+
+  blogForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    setMessage(blogMessage, "Guardando entrada...", "loading");
+
+    const formData = new FormData(blogForm);
+    const file = formData.get("imagen");
+    const postId = formData.get("post_id");
+    const existingImage = blogForm.getAttribute("data-image");
+
+    let imageUrl = existingImage || null;
+    if (file instanceof File && file.size > 0) {
+      try {
+        imageUrl = await uploadImage(file, BLOG_FOLDER);
+        if (existingImage) await removeImageByUrl(existingImage);
+      } catch (error) {
+        setMessage(blogMessage, "Error al subir la imagen. Intenta nuevamente.", "error");
+        return;
+      }
+    }
+
+    const payload = {
+      title: formData.get("titulo"),
+      category: formData.get("categoria"),
+      excerpt: formData.get("extracto"),
+      content: formData.get("contenido"),
+      image_url: imageUrl,
+    };
+
+    if (postId) {
+      const { error } = await supabase.from("blog_posts").update(payload).eq("id", postId);
+      if (error) {
+        setMessage(blogMessage, "Error al actualizar la entrada.", "error");
+        return;
+      }
+      setMessage(blogMessage, "Entrada actualizada correctamente.", "success");
+    } else {
+      const { error } = await supabase.from("blog_posts").insert({
+        ...payload,
+        published_at: new Date().toISOString(),
+      });
+      if (error) {
+        setMessage(blogMessage, "Error al guardar la entrada.", "error");
+        return;
+      }
+      setMessage(blogMessage, "Entrada publicada correctamente.", "success");
+    }
+
+    resetBlogForm();
+    loadBlogPosts();
+  });
+
+  galleryForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    setMessage(galleryMessage, "Guardando imagen...", "loading");
+
+    const formData = new FormData(galleryForm);
+    const file = formData.get("imagen");
+    const imageId = formData.get("image_id");
+    const existingImage = galleryForm.getAttribute("data-image");
+
+    let imageUrl = existingImage || null;
+    if (file instanceof File && file.size > 0) {
+      try {
+        imageUrl = await uploadImage(file, GALLERY_FOLDER);
+        if (existingImage) await removeImageByUrl(existingImage);
+      } catch (error) {
+        setMessage(galleryMessage, "Error al subir la imagen. Intenta nuevamente.", "error");
+        return;
+      }
+    }
+
+    if (!imageUrl) {
+      setMessage(galleryMessage, "Selecciona una imagen para continuar.", "error");
+      return;
+    }
+
+    const payload = {
+      url_publica: imageUrl,
+      alt_text: formData.get("alt"),
+      descripcion: formData.get("titulo"),
+    };
+
+    if (imageId) {
+      const { error } = await supabase.from("imagenes").update(payload).eq("id", imageId);
+      if (error) {
+        setMessage(galleryMessage, "Error al actualizar la imagen.", "error");
+        return;
+      }
+      setMessage(galleryMessage, "Imagen actualizada correctamente.", "success");
+    } else {
+      const { error } = await supabase.from("imagenes").insert(payload);
+      if (error) {
+        setMessage(galleryMessage, "Error al guardar la imagen.", "error");
+        return;
+      }
+      setMessage(galleryMessage, "Imagen publicada en la galería.", "success");
+    }
+
+    resetGalleryForm();
+    loadGalleryItems();
+  });
+
+  blogCancel?.addEventListener("click", () => {
+    resetBlogForm();
+    setMessage(blogMessage, "", "info");
+  });
+
+  galleryCancel?.addEventListener("click", () => {
+    resetGalleryForm();
+    setMessage(galleryMessage, "", "info");
+  });
+
+  await loadBlogPosts();
+  await loadGalleryItems();
+</script>
+
+<script>
+  const tabs = document.querySelectorAll(".tab");
+  const panels = document.querySelectorAll(".tab-panel");
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const target = tab.getAttribute("data-tab");
+
+      tabs.forEach((btn) => {
+        const isActive = btn === tab;
+        btn.setAttribute("aria-selected", String(isActive));
+      });
+
+      panels.forEach((panel) => {
+        panel.hidden = panel.getAttribute("data-panel") !== target;
+      });
+    });
+  });
+</script>
+
+<style>
+  .page {
+    padding: 7rem 0 6rem;
+  }
+
+  h1 {
+    font-family: "Alegreya", serif;
+    font-size: clamp(2.5rem, 4vw, 4rem);
+    margin: 0 0 0.75rem;
+  }
+
+  h2 {
+    font-family: "Alegreya", serif;
+    font-size: 1.8rem;
+    margin: 0;
+  }
+
+  h3 {
+    margin: 0 0 0.4rem;
+    font-size: 1.1rem;
+  }
+
+  .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.25rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin: 0 0 0.5rem;
+  }
+
+  .lead {
+    font-size: 1.1rem;
+    max-width: 720px;
+  }
+
+  .auth-banner {
+    margin-top: 1.5rem;
+    background: var(--paper-2);
+    padding: 0.9rem 1.2rem;
+    border-radius: 12px;
+    color: var(--muted);
+  }
+
+  .auth-banner[data-state="ready"] {
+    background: rgba(47, 107, 76, 0.12);
+    color: var(--bg-ink);
+  }
+
+  .tabs {
+    margin-top: 2.5rem;
+    background: var(--paper);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+  }
+
+  .tab-list {
+    display: flex;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .tab {
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    color: var(--muted);
+  }
+
+  .tab[aria-selected="true"] {
+    background: var(--accent);
+    color: white;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .form {
+    display: grid;
+    gap: 1.2rem;
+  }
+
+  label {
+    display: grid;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: var(--bg-ink);
+  }
+
+  input,
+  textarea {
+    padding: 0.75rem 0.9rem;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    font-family: inherit;
+    font-size: 1rem;
+  }
+
+  .actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .preview {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 14px;
+    background: var(--paper-2);
+    align-items: center;
+  }
+
+  .preview-media {
+    width: 100%;
+    max-width: 220px;
+  }
+
+  .preview-media img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  .preview-media img:not([src]) {
+    display: none;
+  }
+
+  .preview-title {
+    font-weight: 600;
+    margin: 0 0 0.25rem;
+  }
+
+  .preview-excerpt {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 0.85rem 1.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(47, 107, 76, 0.25);
+  }
+
+  .secondary {
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    color: var(--text);
+  }
+
+  .danger {
+    background: #b23c3c;
+    color: white;
+  }
+
+  .note {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+    min-height: 1.2rem;
+  }
+
+  .note[data-status="success"] {
+    color: #256c4a;
+    font-weight: 600;
+  }
+
+  .note[data-status="error"] {
+    color: #b23c3c;
+    font-weight: 600;
+  }
+
+  .note[data-status="loading"] {
+    color: #6b5d2f;
+    font-weight: 600;
+  }
+
+  .toast {
+    position: fixed;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    background: var(--paper);
+    color: var(--text);
+    padding: 0.9rem 1.2rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 2000;
+    max-width: 320px;
+  }
+
+  .toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .toast[data-status="success"] {
+    border-left: 4px solid #2f6b4c;
+  }
+
+  .toast[data-status="error"] {
+    border-left: 4px solid #b23c3c;
+  }
+
+  .toast[data-status="loading"] {
+    border-left: 4px solid #6b5d2f;
+  }
+
+  .list {
+    margin-top: 2.5rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .list-card {
+    display: grid;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    border-radius: 16px;
+    background: var(--paper-2);
+  }
+
+  .list-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .meta {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .thumb img {
+    width: 120px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+
+  @media (min-width: 700px) {
+    .preview {
+      grid-template-columns: auto 1fr;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .list-card {
+      grid-template-columns: auto 1fr auto;
+    }
+  }
+</style>
