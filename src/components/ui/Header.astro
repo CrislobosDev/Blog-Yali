@@ -8,13 +8,12 @@ const navItems = [
 
 const currentPath = Astro.url.pathname;
 const isActive = (href) => (href === "/" ? currentPath === "/" : currentPath.startsWith(href));
-const isAdminVisible = Astro.cookies.has("admin_session");
 ---
 
 <header class="site-header" data-menu="closed">
   <div class="container header-inner">
     <a class="brand" href="/" aria-label="Inicio">
-      <img src="/logo.png" alt="Yali Salvaje" width="200" height="68" />
+      <img src="https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636652439-logo.webp" alt="Yali Salvaje" width="200" height="68" />
     </a>
 
     <nav class="nav-desktop" aria-label="Principal">
@@ -27,16 +26,6 @@ const isAdminVisible = Astro.cookies.has("admin_session");
           {item.label}
         </a>
       ))}
-      {isAdminVisible && (
-        <a
-          href="/admin"
-          class={isActive("/admin") ? "is-active" : undefined}
-          aria-current={isActive("/admin") ? "page" : undefined}
-          data-admin-link="true"
-        >
-          Admin
-        </a>
-      )}
     </nav>
 
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu-movil">
@@ -55,16 +44,6 @@ const isAdminVisible = Astro.cookies.has("admin_session");
         {item.label}
       </a>
     ))}
-    {isAdminVisible && (
-      <a
-        href="/admin"
-        class={isActive("/admin") ? "is-active" : undefined}
-        aria-current={isActive("/admin") ? "page" : undefined}
-        data-admin-link="true"
-      >
-        Admin
-      </a>
-    )}
   </nav>
 </header>
 
@@ -213,8 +192,6 @@ const isAdminVisible = Astro.cookies.has("admin_session");
   const header = document.querySelector(".site-header");
   const toggle = header?.querySelector(".menu-toggle");
   const mobileNav = header?.querySelector(".nav-mobile");
-  const adminLinks = header?.querySelectorAll("[data-admin-link='true']");
-
   if (toggle && mobileNav && header) {
     toggle.addEventListener("click", () => {
       const isOpen = header.getAttribute("data-menu") === "open";
@@ -223,13 +200,4 @@ const isAdminVisible = Astro.cookies.has("admin_session");
     });
   }
 
-  if (adminLinks && adminLinks.length > 0) {
-    const hasAdminCookie = document.cookie
-      .split(";")
-      .map((part) => part.trim())
-      .some((part) => part.startsWith("admin_session="));
-    if (!hasAdminCookie) {
-      adminLinks.forEach((link) => link.remove());
-    }
-  }
 </script>

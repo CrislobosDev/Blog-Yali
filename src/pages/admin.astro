@@ -139,26 +139,6 @@ import Footer from "../components/ui/Footer.astro";
 </script>
 <script type="module" src="/scripts/admin.js"></script>
 
-<script>
-  const tabs = document.querySelectorAll(".tab");
-  const panels = document.querySelectorAll(".tab-panel");
-
-  tabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      const target = tab.getAttribute("data-tab");
-
-      tabs.forEach((btn) => {
-        const isActive = btn === tab;
-        btn.setAttribute("aria-selected", String(isActive));
-      });
-
-      panels.forEach((panel) => {
-        panel.hidden = panel.getAttribute("data-panel") !== target;
-      });
-    });
-  });
-</script>
-
 <style>
   .page {
     padding: 7rem 0 6rem;

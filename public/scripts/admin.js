@@ -125,11 +125,36 @@ const uploadImage = async (file, folder) => {
   const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(path, file, {
     cacheControl: "3600",
     upsert: false,
+    contentType: file.type || "image/webp",
   });
   if (error) throw error;
 
   const { data: publicData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path);
   return publicData.publicUrl;
+};
+
+const compressImage = async (file, options = {}) => {
+  const { maxWidth = 1600, quality = 0.8 } = options;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, maxWidth / bitmap.width);
+    const width = Math.round(bitmap.width * scale);
+    const height = Math.round(bitmap.height * scale);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(bitmap, 0, 0, width, height);
+
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", quality));
+    if (!blob) return file;
+    const baseName = file.name.replace(/\.[^.]+$/, "");
+    return new File([blob], `${baseName}.webp`, { type: "image/webp" });
+  } catch (error) {
+    return file;
+  }
 };
 
 const resetBlogForm = () => {
@@ -359,7 +384,8 @@ blogForm?.addEventListener("submit", async (event) => {
   let imageUrl = existingImage || null;
   if (file instanceof File && file.size > 0) {
     try {
-      imageUrl = await uploadImage(file, BLOG_FOLDER);
+      const optimized = await compressImage(file, { maxWidth: 1600, quality: 0.8 });
+      imageUrl = await uploadImage(optimized, BLOG_FOLDER);
       if (existingImage) await removeImageByUrl(existingImage);
     } catch (error) {
       setMessage(blogMessage, "Error al subir la imagen. Intenta nuevamente.", "error");
@@ -410,7 +436,8 @@ galleryForm?.addEventListener("submit", async (event) => {
   let imageUrl = existingImage || null;
   if (file instanceof File && file.size > 0) {
     try {
-      imageUrl = await uploadImage(file, GALLERY_FOLDER);
+      const optimized = await compressImage(file, { maxWidth: 1400, quality: 0.8 });
+      imageUrl = await uploadImage(optimized, GALLERY_FOLDER);
       if (existingImage) await removeImageByUrl(existingImage);
     } catch (error) {
       setMessage(galleryMessage, "Error al subir la imagen. Intenta nuevamente.", "error");
@@ -461,3 +488,21 @@ galleryCancel?.addEventListener("click", () => {
 
 await loadBlogPosts();
 await loadGalleryItems();
+
+const tabs = document.querySelectorAll(".tab");
+const panels = document.querySelectorAll(".tab-panel");
+
+tabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    const target = tab.getAttribute("data-tab");
+
+    tabs.forEach((btn) => {
+      const isActive = btn === tab;
+      btn.setAttribute("aria-selected", String(isActive));
+    });
+
+    panels.forEach((panel) => {
+      panel.hidden = panel.getAttribute("data-panel") !== target;
+    });
+  });
+});
