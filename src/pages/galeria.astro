@@ -41,9 +41,7 @@ const imagenesGaleria = fotos ?? [];
                 loading="lazy"
                 data-full={foto.url_publica}
               />
-              {(foto.descripcion || foto.alt_text) && (
-                <figcaption>{foto.descripcion ?? foto.alt_text}</figcaption>
-              )}
+              <figcaption>{foto.descripcion ?? foto.alt_text ?? "Sin descripción"}</figcaption>
             </figure>
           ))
         )}
@@ -75,7 +73,10 @@ const imagenesGaleria = fotos ?? [];
   const openLightbox = (img) => {
     if (!lightbox || !lightboxImage) return;
     const src = img.getAttribute("data-full") || img.src;
-    const caption = img.closest("figure")?.querySelector("figcaption")?.textContent || "";
+      const caption =
+        img.closest("figure")?.querySelector("figcaption")?.textContent ||
+        img.getAttribute("alt") ||
+        "";
     lightboxImage.setAttribute("src", src);
     lightboxImage.setAttribute("alt", img.alt || "");
     if (lightboxCaption) lightboxCaption.textContent = caption;
