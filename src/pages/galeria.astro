@@ -39,6 +39,7 @@ const imagenesGaleria = fotos ?? [];
                 src={foto.url_publica}
                 alt={foto.alt_text ?? "Fotografía del humedal"}
                 loading="lazy"
+                data-full={foto.url_publica}
               />
               {(foto.descripcion || foto.alt_text) && (
                 <figcaption>{foto.descripcion ?? foto.alt_text}</figcaption>
@@ -47,10 +48,92 @@ const imagenesGaleria = fotos ?? [];
           ))
         )}
       </div>
+      <div class="lightbox" id="lightbox" aria-hidden="true">
+        <button class="lightbox-close" type="button" aria-label="Cerrar">×</button>
+        <button class="lightbox-prev" type="button" aria-label="Anterior">‹</button>
+        <button class="lightbox-next" type="button" aria-label="Siguiente">›</button>
+        <img id="lightbox-image" alt="" />
+        <p id="lightbox-caption"></p>
+      </div>
     </div>
   </section>
   <Footer />
 </Layout>
+
+<script>
+  const lightbox = document.getElementById("lightbox");
+  const lightboxImage = document.getElementById("lightbox-image");
+  const lightboxCaption = document.getElementById("lightbox-caption");
+  const closeButton = document.querySelector(".lightbox-close");
+  const prevButton = document.querySelector(".lightbox-prev");
+  const nextButton = document.querySelector(".lightbox-next");
+  const galleryImages = Array.from(document.querySelectorAll(".foto-item img"));
+  let currentIndex = -1;
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  const openLightbox = (img) => {
+    if (!lightbox || !lightboxImage) return;
+    const src = img.getAttribute("data-full") || img.src;
+    const caption = img.closest("figure")?.querySelector("figcaption")?.textContent || "";
+    lightboxImage.setAttribute("src", src);
+    lightboxImage.setAttribute("alt", img.alt || "");
+    if (lightboxCaption) lightboxCaption.textContent = caption;
+    lightbox.setAttribute("aria-hidden", "false");
+    lightbox.classList.add("is-open");
+    currentIndex = galleryImages.indexOf(img);
+  };
+
+  galleryImages.forEach((img) => {
+    img.addEventListener("click", () => openLightbox(img));
+  });
+
+  const closeLightbox = () => {
+    if (!lightbox) return;
+    lightbox.classList.remove("is-open");
+    lightbox.setAttribute("aria-hidden", "true");
+    currentIndex = -1;
+  };
+
+  const showAtIndex = (index) => {
+    if (!galleryImages.length) return;
+    const safeIndex = (index + galleryImages.length) % galleryImages.length;
+    const img = galleryImages[safeIndex];
+    if (!img) return;
+    currentIndex = safeIndex;
+    openLightbox(img);
+  };
+
+  lightbox?.addEventListener("click", (event) => {
+    if (event.target === lightbox) closeLightbox();
+  });
+
+  closeButton?.addEventListener("click", closeLightbox);
+  prevButton?.addEventListener("click", () => showAtIndex(currentIndex - 1));
+  nextButton?.addEventListener("click", () => showAtIndex(currentIndex + 1));
+
+  lightboxImage?.addEventListener("touchstart", (event) => {
+    const touch = event.touches[0];
+    if (!touch) return;
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+  });
+
+  lightboxImage?.addEventListener("touchend", (event) => {
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+    const diffX = touch.clientX - touchStartX;
+    const diffY = touch.clientY - touchStartY;
+    if (Math.abs(diffX) < 40 || Math.abs(diffY) > 80) return;
+    if (diffX > 0) showAtIndex(currentIndex - 1);
+    else showAtIndex(currentIndex + 1);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeLightbox();
+    if (event.key === "ArrowLeft") showAtIndex(currentIndex - 1);
+    if (event.key === "ArrowRight") showAtIndex(currentIndex + 1);
+  });
+</script>
 
 <style>
   .page {
@@ -102,6 +185,74 @@ const imagenesGaleria = fotos ?? [];
     padding: 0.9rem 1rem 1.1rem;
     font-size: 0.95rem;
     color: var(--muted);
+  }
+
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 2000;
+    padding: 2rem;
+  }
+
+  .lightbox.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .lightbox img {
+    max-width: min(100%, 1100px);
+    max-height: 80vh;
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+  }
+
+  .lightbox p {
+    color: #e8efe4;
+    margin-top: 1rem;
+    text-align: center;
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 2rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .lightbox-prev,
+  .lightbox-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 2.4rem;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .lightbox-prev {
+    left: 1.5rem;
+  }
+
+  .lightbox-next {
+    right: 1.5rem;
   }
 
   .empty {
