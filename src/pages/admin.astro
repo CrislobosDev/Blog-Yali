@@ -196,13 +196,15 @@ import Footer from "../components/ui/Footer.astro";
 
   logoutButton?.addEventListener("click", async () => {
     await supabase.auth.signOut();
-    document.cookie = "admin_session=; Path=/; Max-Age=0; SameSite=Lax";
+    const secure = window.location.protocol === "https:" ? " Secure;" : "";
+    document.cookie = `admin_session=; Path=/; Max-Age=0; SameSite=Lax;${secure}`;
     window.location.href = "/login";
   });
 
   supabase.auth.onAuthStateChange((event, session) => {
     if (!session) {
-      document.cookie = "admin_session=; Path=/; Max-Age=0; SameSite=Lax";
+      const secure = window.location.protocol === "https:" ? " Secure;" : "";
+      document.cookie = `admin_session=; Path=/; Max-Age=0; SameSite=Lax;${secure}`;
       if (banner) {
         banner.setAttribute("data-state", "expired");
         banner.textContent = "Sesión expirada. Redirigiendo al login...";

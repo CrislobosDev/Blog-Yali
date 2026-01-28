@@ -51,8 +51,12 @@ import Footer from "../components/ui/Footer.astro";
       return;
     }
 
-    document.cookie = "admin_session=1; Path=/; SameSite=Lax";
-    window.location.href = "/admin";
+    const secure = window.location.protocol === "https:" ? " Secure;" : "";
+    document.cookie = `admin_session=1; Path=/; Max-Age=3600; SameSite=Lax;${secure}`;
+    if (message) message.textContent = "Acceso correcto. Redirigiendo...";
+    setTimeout(() => {
+      window.location.href = "/admin";
+    }, 250);
   });
 </script>
 
