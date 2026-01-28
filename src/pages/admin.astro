@@ -131,10 +131,10 @@ import Footer from "../components/ui/Footer.astro";
   <Footer />
 </Layout>
 
-<script>
+<script define:vars={{ supabaseUrl: import.meta.env.PUBLIC_SUPABASE_URL, supabaseAnonKey: import.meta.env.PUBLIC_SUPABASE_ANON_KEY }}>
   window.__SUPABASE__ = {
-    url: {JSON.stringify(import.meta.env.PUBLIC_SUPABASE_URL)},
-    key: {JSON.stringify(import.meta.env.PUBLIC_SUPABASE_ANON_KEY)},
+    url: supabaseUrl,
+    key: supabaseAnonKey,
   };
 </script>
 <script type="module" src="/scripts/admin.js"></script>
