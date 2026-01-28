@@ -131,7 +131,13 @@ import Footer from "../components/ui/Footer.astro";
   <Footer />
 </Layout>
 
-<script type="module" src={Astro.resolve("../scripts/admin.js")}></script>
+<script>
+  window.__SUPABASE__ = {
+    url: {JSON.stringify(import.meta.env.PUBLIC_SUPABASE_URL)},
+    key: {JSON.stringify(import.meta.env.PUBLIC_SUPABASE_ANON_KEY)},
+  };
+</script>
+<script type="module" src="/scripts/admin.js"></script>
 
 <script>
   const tabs = document.querySelectorAll(".tab");

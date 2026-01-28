@@ -1,9 +1,10 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+const config = window.__SUPABASE__ || {};
+const supabaseUrl = config.url;
+const supabaseAnonKey = config.key;
+
 const storage = typeof window !== "undefined" ? window.sessionStorage : undefined;
-
 const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
@@ -60,6 +61,13 @@ const setMessage = (el, text, type = "info") => {
   el.setAttribute("data-status", type);
   if (text) showToast(text, type);
 };
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  if (banner) {
+    banner.setAttribute("data-state", "expired");
+    banner.textContent = "Faltan variables de Supabase en producción.";
+  }
+}
 
 const { data } = await supabase.auth.getSession();
 

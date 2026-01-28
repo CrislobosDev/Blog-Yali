@@ -1,9 +1,17 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+const config = window.__SUPABASE__ || {};
+const supabaseUrl = config.url;
+const supabaseAnonKey = config.key;
+
+const message = document.getElementById("login-message");
+const form = document.getElementById("login-form");
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  if (message) message.textContent = "Faltan variables de Supabase en producción.";
+}
+
 const storage = typeof window !== "undefined" ? window.sessionStorage : undefined;
-
 const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
@@ -12,9 +20,6 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storage,
   },
 });
-
-const message = document.getElementById("login-message");
-const form = document.getElementById("login-form");
 
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();
