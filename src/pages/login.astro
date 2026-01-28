@@ -32,7 +32,19 @@ import Footer from "../components/ui/Footer.astro";
 </Layout>
 
 <script type="module">
-  import { supabase } from "../lib/supabaseClient.js";
+  import { createClient } from "@supabase/supabase-js";
+
+  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+  const storage = typeof window !== "undefined" ? window.sessionStorage : undefined;
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: false,
+      storage,
+    },
+  });
 
   const message = document.getElementById("login-message");
   const form = document.getElementById("login-form");
