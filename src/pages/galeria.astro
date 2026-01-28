@@ -40,6 +40,7 @@ const imagenesGaleria = fotos ?? [];
                 alt={foto.alt_text ?? "Fotografía del humedal"}
                 loading="lazy"
                 data-full={foto.url_publica}
+                data-caption={foto.descripcion ?? foto.alt_text ?? "Sin descripción"}
               />
               <figcaption>{foto.descripcion ?? foto.alt_text ?? "Sin descripción"}</figcaption>
             </figure>
@@ -74,6 +75,7 @@ const imagenesGaleria = fotos ?? [];
     if (!lightbox || !lightboxImage) return;
     const src = img.getAttribute("data-full") || img.src;
       const caption =
+        img.getAttribute("data-caption") ||
         img.closest("figure")?.querySelector("figcaption")?.textContent ||
         img.getAttribute("alt") ||
         "";
@@ -186,6 +188,8 @@ const imagenesGaleria = fotos ?? [];
     padding: 0.9rem 1rem 1.1rem;
     font-size: 0.95rem;
     color: var(--muted);
+    display: block;
+    min-height: 2.2rem;
   }
 
   .lightbox {
