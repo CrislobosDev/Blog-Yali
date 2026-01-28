@@ -94,6 +94,10 @@ import Footer from "../components/ui/Footer.astro";
               <input type="text" name="titulo" placeholder="Descripción corta" required />
             </label>
             <label>
+              Detalle
+              <textarea name="detalle" rows="3" placeholder="Detalle adicional de la imagen"></textarea>
+            </label>
+            <label>
               Texto alternativo
               <input type="text" name="alt" placeholder="Texto alternativo para accesibilidad" required />
             </label>
@@ -107,6 +111,7 @@ import Footer from "../components/ui/Footer.astro";
               </div>
               <div>
                 <p class="preview-title" id="gallery-preview-title">Descripción de la imagen</p>
+                <p class="preview-excerpt" id="gallery-preview-detail">Detalle de la imagen</p>
                 <p class="preview-excerpt" id="gallery-preview-alt">Texto alternativo</p>
               </div>
             </div>

@@ -39,6 +39,7 @@ const gallerySubmit = document.getElementById("gallery-submit");
 const galleryCancel = document.getElementById("gallery-cancel");
 const galleryPreviewImage = document.getElementById("gallery-preview-image");
 const galleryPreviewTitle = document.getElementById("gallery-preview-title");
+const galleryPreviewDetail = document.getElementById("gallery-preview-detail");
 const galleryPreviewAlt = document.getElementById("gallery-preview-alt");
 
 const toast = document.getElementById("toast");
@@ -177,6 +178,7 @@ const resetGalleryForm = () => {
   galleryForm?.removeAttribute("data-image");
   if (galleryPreviewImage) galleryPreviewImage.removeAttribute("src");
   if (galleryPreviewTitle) galleryPreviewTitle.textContent = "Descripción de la imagen";
+  if (galleryPreviewDetail) galleryPreviewDetail.textContent = "Detalle de la imagen";
   if (galleryPreviewAlt) galleryPreviewAlt.textContent = "Texto alternativo";
 };
 
@@ -221,6 +223,11 @@ blogForm?.querySelector("[name='categoria']")?.addEventListener("input", (event)
 galleryForm?.querySelector("[name='titulo']")?.addEventListener("input", (event) => {
   const value = event.target?.value ?? "";
   if (galleryPreviewTitle) galleryPreviewTitle.textContent = value || "Descripción de la imagen";
+});
+
+galleryForm?.querySelector("[name='detalle']")?.addEventListener("input", (event) => {
+  const value = event.target?.value ?? "";
+  if (galleryPreviewDetail) galleryPreviewDetail.textContent = value || "Detalle de la imagen";
 });
 
 galleryForm?.querySelector("[name='alt']")?.addEventListener("input", (event) => {
@@ -310,7 +317,7 @@ const loadBlogPosts = async () => {
 const loadGalleryItems = async () => {
   const { data: items, error } = await supabase
     .from("imagenes")
-    .select("id, url_publica, alt_text, descripcion, created_at")
+    .select("id, url_publica, alt_text, descripcion, detalle, created_at")
     .order("created_at", { ascending: false });
 
   if (error || !galleryList) return;
@@ -325,13 +332,14 @@ const loadGalleryItems = async () => {
     const card = document.createElement("article");
     card.className = "list-card";
 
-    card.innerHTML = `
+      card.innerHTML = `
       <div class="thumb">
         <img src="${item.url_publica}" alt="${item.alt_text ?? "Imagen"}" />
       </div>
       <div>
         <h3>${item.descripcion ?? "Sin descripción"}</h3>
         <p class="excerpt">${item.alt_text ?? ""}</p>
+        ${item.detalle ? `<p class="excerpt">${item.detalle}</p>` : ""}
         <p class="meta">${formatDate(item.created_at)}</p>
       </div>
       <div class="list-actions">
@@ -343,8 +351,10 @@ const loadGalleryItems = async () => {
     card.querySelector("[data-action='edit']")?.addEventListener("click", () => {
       galleryForm?.querySelector("[name='image_id']")?.setAttribute("value", String(item.id));
       const titleInput = galleryForm?.querySelector("[name='titulo']");
+      const detailInput = galleryForm?.querySelector("[name='detalle']");
       const altInput = galleryForm?.querySelector("[name='alt']");
       if (titleInput) titleInput.value = item.descripcion ?? "";
+      if (detailInput) detailInput.value = item.detalle ?? "";
       if (altInput) altInput.value = item.alt_text ?? "";
       galleryForm?.setAttribute("data-image", item.url_publica ?? "");
       if (galleryPreviewImage) {
@@ -353,6 +363,8 @@ const loadGalleryItems = async () => {
       }
       if (galleryPreviewTitle)
         galleryPreviewTitle.textContent = item.descripcion ?? "Descripción de la imagen";
+      if (galleryPreviewDetail)
+        galleryPreviewDetail.textContent = item.detalle ?? "Detalle de la imagen";
       if (galleryPreviewAlt)
         galleryPreviewAlt.textContent = item.alt_text ?? "Texto alternativo";
       if (gallerySubmit) gallerySubmit.textContent = "Actualizar";
@@ -454,6 +466,7 @@ galleryForm?.addEventListener("submit", async (event) => {
     url_publica: imageUrl,
     alt_text: formData.get("alt"),
     descripcion: formData.get("titulo"),
+    detalle: formData.get("detalle"),
   };
 
   if (imageId) {

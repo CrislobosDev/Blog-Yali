@@ -6,7 +6,7 @@ import { supabase } from "../lib/supabaseClient";
 
 const { data: fotos, error } = await supabase
   .from("imagenes")
-  .select("id, url_publica, alt_text, descripcion")
+  .select("id, url_publica, alt_text, descripcion, detalle")
   .order("created_at", { ascending: false });
 
 if (error) {
@@ -41,8 +41,12 @@ const imagenesGaleria = fotos ?? [];
                 loading="lazy"
                 data-full={foto.url_publica}
                 data-caption={foto.descripcion ?? foto.alt_text ?? "Sin descripción"}
+                data-detail={foto.detalle ?? ""}
               />
-              <figcaption>{foto.descripcion ?? foto.alt_text ?? "Sin descripción"}</figcaption>
+              <figcaption>
+                {foto.descripcion ?? foto.alt_text ?? "Sin descripción"}
+                {foto.detalle ? <span class="caption-detail">{foto.detalle}</span> : null}
+              </figcaption>
             </figure>
           ))
         )}
@@ -51,8 +55,12 @@ const imagenesGaleria = fotos ?? [];
         <button class="lightbox-close" type="button" aria-label="Cerrar">×</button>
         <button class="lightbox-prev" type="button" aria-label="Anterior">‹</button>
         <button class="lightbox-next" type="button" aria-label="Siguiente">›</button>
-        <img id="lightbox-image" alt="" />
-        <p id="lightbox-caption"></p>
+        <div class="lightbox-content">
+          <img id="lightbox-image" alt="" />
+          <div class="lightbox-meta">
+            <p class="lightbox-title" id="lightbox-caption"></p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -79,9 +87,12 @@ const imagenesGaleria = fotos ?? [];
         img.closest("figure")?.querySelector("figcaption")?.textContent ||
         img.getAttribute("alt") ||
         "";
-    lightboxImage.setAttribute("src", src);
-    lightboxImage.setAttribute("alt", img.alt || "");
-    if (lightboxCaption) lightboxCaption.textContent = caption;
+      const detail = img.getAttribute("data-detail") || "";
+      lightboxImage.setAttribute("src", src);
+      lightboxImage.setAttribute("alt", img.alt || "");
+      if (lightboxCaption) {
+        lightboxCaption.textContent = detail ? `${caption} — ${detail}` : caption;
+      }
     lightbox.setAttribute("aria-hidden", "false");
     lightbox.classList.add("is-open");
     currentIndex = galleryImages.indexOf(img);
@@ -192,6 +203,13 @@ const imagenesGaleria = fotos ?? [];
     min-height: 2.2rem;
   }
 
+  .caption-detail {
+    display: block;
+    font-size: 0.85rem;
+    color: rgba(89, 96, 88, 0.8);
+    margin-top: 0.25rem;
+  }
+
   .lightbox {
     position: fixed;
     inset: 0;
@@ -210,17 +228,45 @@ const imagenesGaleria = fotos ?? [];
     pointer-events: auto;
   }
 
-  .lightbox img {
+  .lightbox-content {
+    display: grid;
+    gap: 1rem;
+    align-items: center;
+    justify-items: center;
     max-width: min(100%, 1100px);
-    max-height: 80vh;
-    border-radius: 14px;
-    box-shadow: var(--shadow);
   }
 
-  .lightbox p {
-    color: #e8efe4;
-    margin-top: 1rem;
+  .lightbox img {
+    width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .lightbox-meta {
+    background: rgba(0, 0, 0, 0.35);
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
     text-align: center;
+  }
+
+  .lightbox-title {
+    color: #f1f4ef;
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+    margin: 0;
+  }
+
+  @media (min-width: 900px) {
+    .lightbox-content {
+      grid-template-columns: 1fr;
+    }
+
+    .lightbox-title {
+      font-size: 1.25rem;
+    }
   }
 
   .lightbox-close {
