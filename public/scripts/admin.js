@@ -27,6 +27,9 @@ const blogMessage = document.getElementById("blog-message");
 const blogList = document.getElementById("blog-list");
 const blogSubmit = document.getElementById("blog-submit");
 const blogCancel = document.getElementById("blog-cancel");
+const blogNew = document.getElementById("blog-new");
+const blogModal = document.getElementById("blog-modal");
+const blogModalTitle = document.getElementById("blog-modal-title");
 const blogPreviewImage = document.getElementById("blog-preview-image");
 const blogPreviewTitle = document.getElementById("blog-preview-title");
 const blogPreviewExcerpt = document.getElementById("blog-preview-excerpt");
@@ -37,10 +40,21 @@ const galleryMessage = document.getElementById("gallery-message");
 const galleryList = document.getElementById("gallery-list");
 const gallerySubmit = document.getElementById("gallery-submit");
 const galleryCancel = document.getElementById("gallery-cancel");
+const galleryNew = document.getElementById("gallery-new");
+const galleryModal = document.getElementById("gallery-modal");
+const galleryModalTitle = document.getElementById("gallery-modal-title");
 const galleryPreviewImage = document.getElementById("gallery-preview-image");
 const galleryPreviewTitle = document.getElementById("gallery-preview-title");
 const galleryPreviewDetail = document.getElementById("gallery-preview-detail");
 const galleryPreviewAlt = document.getElementById("gallery-preview-alt");
+const galleryFeatured = galleryForm?.querySelector("[name='destacada']");
+const galleryFeaturedOnly = document.getElementById("gallery-featured-only");
+const galleryFeaturedLimit = document.getElementById("gallery-featured-limit");
+const galleryFeaturedSave = document.getElementById("gallery-featured-save");
+const gallerySettingsMessage = document.getElementById("gallery-settings-message");
+
+const SETTINGS_TABLE = "site_settings";
+const FEATURED_LIMIT_KEY = "featured_gallery_limit";
 
 const toast = document.getElementById("toast");
 let toastTimeout = null;
@@ -170,12 +184,52 @@ const resetBlogForm = () => {
   if (blogPreviewCategory) blogPreviewCategory.textContent = "Sin categoría";
 };
 
+const openModal = (modalEl) => {
+  if (!modalEl) return;
+  modalEl.classList.add("is-open");
+  modalEl.setAttribute("aria-hidden", "false");
+};
+
+const closeModal = (modalEl) => {
+  if (!modalEl) return;
+  modalEl.classList.remove("is-open");
+  modalEl.setAttribute("aria-hidden", "true");
+};
+
+const openBlogModal = (mode = "new") => {
+  if (blogModalTitle) {
+    blogModalTitle.textContent = mode === "edit" ? "Editar entrada" : "Nueva entrada";
+  }
+  openModal(blogModal);
+};
+
+const openGalleryModal = (mode = "new") => {
+  if (galleryModalTitle) {
+    galleryModalTitle.textContent = mode === "edit" ? "Editar imagen" : "Nueva imagen";
+  }
+  openModal(galleryModal);
+};
+
+const closeBlogModal = () => {
+  resetBlogForm();
+  setMessage(blogMessage, "", "info");
+  closeModal(blogModal);
+};
+
+const closeGalleryModal = () => {
+  resetGalleryForm();
+  setMessage(galleryMessage, "", "info");
+  closeModal(galleryModal);
+};
+
 const resetGalleryForm = () => {
   galleryForm?.reset();
   galleryForm?.querySelector("[name='image_id']")?.setAttribute("value", "");
   if (gallerySubmit) gallerySubmit.textContent = "Subir imagen";
   if (galleryCancel) galleryCancel.hidden = true;
   galleryForm?.removeAttribute("data-image");
+  galleryForm?.removeAttribute("data-featured-order");
+  if (galleryFeatured instanceof HTMLInputElement) galleryFeatured.checked = false;
   if (galleryPreviewImage) galleryPreviewImage.removeAttribute("src");
   if (galleryPreviewTitle) galleryPreviewTitle.textContent = "Descripción de la imagen";
   if (galleryPreviewDetail) galleryPreviewDetail.textContent = "Detalle de la imagen";
@@ -244,6 +298,52 @@ const formatDate = (value) => {
   });
 };
 
+const loadFeaturedLimit = async () => {
+  if (!(galleryFeaturedLimit instanceof HTMLInputElement)) return;
+  const { data, error } = await supabase
+    .from(SETTINGS_TABLE)
+    .select("value")
+    .eq("key", FEATURED_LIMIT_KEY)
+    .maybeSingle();
+  if (error) return;
+  const value = Number(data?.value);
+  galleryFeaturedLimit.value = Number.isFinite(value) ? String(value) : "6";
+};
+
+const saveFeaturedLimit = async () => {
+  if (!(galleryFeaturedLimit instanceof HTMLInputElement)) return;
+  const value = Number(galleryFeaturedLimit.value);
+  if (!Number.isFinite(value) || value <= 0) {
+    setMessage(gallerySettingsMessage, "Ingresa un número válido.", "error");
+    return;
+  }
+  const { error } = await supabase.from(SETTINGS_TABLE).upsert(
+    {
+      key: FEATURED_LIMIT_KEY,
+      value: String(Math.round(value)),
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "key" }
+  );
+  if (error) {
+    setMessage(gallerySettingsMessage, "No se pudo guardar el límite.", "error");
+    return;
+  }
+  setMessage(gallerySettingsMessage, "Límite guardado.", "success");
+};
+
+const getNextFeaturedOrder = async () => {
+  const { data, error } = await supabase
+    .from("imagenes")
+    .select("destacada_orden")
+    .eq("destacada", true)
+    .order("destacada_orden", { ascending: false, nullsFirst: false })
+    .limit(1);
+  if (error) return 1;
+  const lastValue = Number(data?.[0]?.destacada_orden);
+  return Number.isFinite(lastValue) ? lastValue + 1 : 1;
+};
+
 const loadBlogPosts = async () => {
   const { data: posts, error } = await supabase
     .from("blog_posts")
@@ -275,7 +375,8 @@ const loadBlogPosts = async () => {
       </div>
     `;
 
-    card.querySelector("[data-action='edit']")?.addEventListener("click", () => {
+    const editButton = card.querySelector("[data-action='edit']");
+    editButton?.addEventListener("click", () => {
       blogForm?.querySelector("[name='post_id']")?.setAttribute("value", String(post.id));
       const titleInput = blogForm?.querySelector("[name='titulo']");
       const categoryInput = blogForm?.querySelector("[name='categoria']");
@@ -299,7 +400,7 @@ const loadBlogPosts = async () => {
         blogPreviewCategory.textContent = post.category ?? "Sin categoría";
       if (blogSubmit) blogSubmit.textContent = "Actualizar";
       if (blogCancel) blogCancel.hidden = false;
-      blogForm?.scrollIntoView({ behavior: "smooth" });
+      openBlogModal("edit");
     });
 
     card.querySelector("[data-action='delete']")?.addEventListener("click", async () => {
@@ -310,15 +411,32 @@ const loadBlogPosts = async () => {
       showToast("Entrada eliminada.", "success");
     });
 
+    card.addEventListener("click", (event) => {
+      const target = event.target;
+      if (target instanceof HTMLElement && target.closest("button")) return;
+      editButton?.click();
+    });
+
     blogList.appendChild(card);
   });
 };
 
 const loadGalleryItems = async () => {
-  const { data: items, error } = await supabase
+  let query = supabase
     .from("imagenes")
-    .select("id, url_publica, alt_text, descripcion, detalle, created_at")
-    .order("created_at", { ascending: false });
+    .select("id, url_publica, alt_text, descripcion, detalle, destacada, destacada_orden, created_at");
+
+  const onlyFeatured = galleryFeaturedOnly instanceof HTMLInputElement && galleryFeaturedOnly.checked;
+  if (onlyFeatured) {
+    query = query
+      .eq("destacada", true)
+      .order("destacada_orden", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: false });
+  } else {
+    query = query.order("created_at", { ascending: false });
+  }
+
+  const { data: items, error } = await query;
 
   if (error || !galleryList) return;
   galleryList.innerHTML = "";
@@ -331,24 +449,29 @@ const loadGalleryItems = async () => {
   items.forEach((item) => {
     const card = document.createElement("article");
     card.className = "list-card";
+    card.dataset.id = String(item.id);
+    if (onlyFeatured) card.setAttribute("draggable", "true");
 
-      card.innerHTML = `
+    card.innerHTML = `
       <div class="thumb">
         <img src="${item.url_publica}" alt="${item.alt_text ?? "Imagen"}" />
       </div>
       <div>
+        ${item.destacada ? "<p class='tag'>Destacada</p>" : ""}
         <h3>${item.descripcion ?? "Sin descripción"}</h3>
         <p class="excerpt">${item.alt_text ?? ""}</p>
         ${item.detalle ? `<p class="excerpt">${item.detalle}</p>` : ""}
         <p class="meta">${formatDate(item.created_at)}</p>
       </div>
       <div class="list-actions">
+        ${onlyFeatured ? "<button type='button' class='drag-handle' aria-label='Reordenar'>↕</button>" : ""}
         <button type="button" data-action="edit" data-id="${item.id}">Editar</button>
         <button type="button" class="danger" data-action="delete" data-id="${item.id}">Eliminar</button>
       </div>
     `;
 
-    card.querySelector("[data-action='edit']")?.addEventListener("click", () => {
+    const editButton = card.querySelector("[data-action='edit']");
+    editButton?.addEventListener("click", () => {
       galleryForm?.querySelector("[name='image_id']")?.setAttribute("value", String(item.id));
       const titleInput = galleryForm?.querySelector("[name='titulo']");
       const detailInput = galleryForm?.querySelector("[name='detalle']");
@@ -356,6 +479,10 @@ const loadGalleryItems = async () => {
       if (titleInput) titleInput.value = item.descripcion ?? "";
       if (detailInput) detailInput.value = item.detalle ?? "";
       if (altInput) altInput.value = item.alt_text ?? "";
+      if (galleryFeatured instanceof HTMLInputElement) {
+        galleryFeatured.checked = Boolean(item.destacada);
+      }
+      galleryForm?.setAttribute("data-featured-order", item.destacada_orden ?? "");
       galleryForm?.setAttribute("data-image", item.url_publica ?? "");
       if (galleryPreviewImage) {
         if (item.url_publica) galleryPreviewImage.setAttribute("src", item.url_publica);
@@ -369,7 +496,7 @@ const loadGalleryItems = async () => {
         galleryPreviewAlt.textContent = item.alt_text ?? "Texto alternativo";
       if (gallerySubmit) gallerySubmit.textContent = "Actualizar";
       if (galleryCancel) galleryCancel.hidden = false;
-      galleryForm?.scrollIntoView({ behavior: "smooth" });
+      openGalleryModal("edit");
     });
 
     card.querySelector("[data-action='delete']")?.addEventListener("click", async () => {
@@ -380,8 +507,16 @@ const loadGalleryItems = async () => {
       showToast("Imagen eliminada.", "success");
     });
 
+    card.addEventListener("click", (event) => {
+      const target = event.target;
+      if (target instanceof HTMLElement && target.closest("button")) return;
+      editButton?.click();
+    });
+
     galleryList.appendChild(card);
   });
+
+  if (onlyFeatured) enableGalleryDrag();
 };
 
 blogForm?.addEventListener("submit", async (event) => {
@@ -432,8 +567,8 @@ blogForm?.addEventListener("submit", async (event) => {
     setMessage(blogMessage, "Entrada publicada correctamente.", "success");
   }
 
-  resetBlogForm();
   loadBlogPosts();
+  closeBlogModal();
 });
 
 galleryForm?.addEventListener("submit", async (event) => {
@@ -444,6 +579,7 @@ galleryForm?.addEventListener("submit", async (event) => {
   const file = formData.get("imagen");
   const imageId = formData.get("image_id");
   const existingImage = galleryForm.getAttribute("data-image");
+  const existingOrder = galleryForm.getAttribute("data-featured-order");
 
   let imageUrl = existingImage || null;
   if (file instanceof File && file.size > 0) {
@@ -462,12 +598,20 @@ galleryForm?.addEventListener("submit", async (event) => {
     return;
   }
 
+  const isFeatured = galleryFeatured instanceof HTMLInputElement && galleryFeatured.checked;
   const payload = {
     url_publica: imageUrl,
     alt_text: formData.get("alt"),
     descripcion: formData.get("titulo"),
     detalle: formData.get("detalle"),
+    destacada: isFeatured,
+    destacada_orden: null,
   };
+
+  if (payload.destacada) {
+    if (existingOrder) payload.destacada_orden = Number(existingOrder);
+    else payload.destacada_orden = await getNextFeaturedOrder();
+  }
 
   if (imageId) {
     const { error } = await supabase.from("imagenes").update(payload).eq("id", imageId);
@@ -485,22 +629,97 @@ galleryForm?.addEventListener("submit", async (event) => {
     setMessage(galleryMessage, "Imagen publicada en la galería.", "success");
   }
 
-  resetGalleryForm();
   loadGalleryItems();
+  closeGalleryModal();
 });
 
 blogCancel?.addEventListener("click", () => {
-  resetBlogForm();
-  setMessage(blogMessage, "", "info");
+  closeBlogModal();
 });
 
 galleryCancel?.addEventListener("click", () => {
+  closeGalleryModal();
+});
+
+blogNew?.addEventListener("click", () => {
+  resetBlogForm();
+  setMessage(blogMessage, "", "info");
+  openBlogModal("new");
+});
+
+galleryNew?.addEventListener("click", () => {
   resetGalleryForm();
   setMessage(galleryMessage, "", "info");
+  openGalleryModal("new");
 });
+
+blogModal?.addEventListener("click", (event) => {
+  if (event.target === blogModal) closeBlogModal();
+});
+
+galleryModal?.addEventListener("click", (event) => {
+  if (event.target === galleryModal) closeGalleryModal();
+});
+
+document.querySelectorAll(".modal-close").forEach((button) => {
+  button.addEventListener("click", () => {
+    closeBlogModal();
+    closeGalleryModal();
+  });
+});
+
+galleryFeaturedOnly?.addEventListener("change", () => {
+  loadGalleryItems();
+});
+
+galleryFeaturedSave?.addEventListener("click", () => {
+  saveFeaturedLimit();
+});
+
+const enableGalleryDrag = () => {
+  if (!galleryList) return;
+  const cards = Array.from(galleryList.querySelectorAll(".list-card"));
+  let draggedCard = null;
+
+  const handleDragOver = (event, target) => {
+    event.preventDefault();
+    if (!draggedCard || draggedCard === target) return;
+    const rect = target.getBoundingClientRect();
+    const shouldInsertAfter = event.clientY - rect.top > rect.height / 2;
+    galleryList.insertBefore(draggedCard, shouldInsertAfter ? target.nextSibling : target);
+  };
+
+  const persistOrder = async () => {
+    const orderedCards = Array.from(galleryList.querySelectorAll(".list-card"));
+    if (!orderedCards.length) return;
+    const updates = orderedCards.map((card, index) => ({
+      id: Number(card.dataset.id),
+      destacada_orden: index + 1,
+    }));
+    await supabase.from("imagenes").upsert(updates, { onConflict: "id" });
+    showToast("Orden actualizado.", "success");
+  };
+
+  cards.forEach((card) => {
+    card.addEventListener("dragstart", (event) => {
+      draggedCard = card;
+      card.classList.add("is-dragging");
+      event.dataTransfer?.setData("text/plain", "");
+    });
+
+    card.addEventListener("dragend", async () => {
+      card.classList.remove("is-dragging");
+      draggedCard = null;
+      await persistOrder();
+    });
+
+    card.addEventListener("dragover", (event) => handleDragOver(event, card));
+  });
+};
 
 await loadBlogPosts();
 await loadGalleryItems();
+await loadFeaturedLimit();
 
 const tabs = document.querySelectorAll(".tab");
 const panels = document.querySelectorAll(".tab-panel");

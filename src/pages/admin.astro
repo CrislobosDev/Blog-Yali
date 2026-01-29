@@ -36,46 +36,53 @@ import Footer from "../components/ui/Footer.astro";
           <div class="panel-header">
             <h2>Publicar entrada</h2>
             <div class="panel-actions">
+              <button type="button" class="secondary" id="blog-new">Nueva entrada</button>
               <button type="button" class="secondary" id="blog-cancel" hidden>Cancelar edición</button>
             </div>
           </div>
-          <form class="form" id="blog-form" autocomplete="off">
-            <input type="hidden" name="post_id" />
-            <label>
-              Título
-              <input type="text" name="titulo" placeholder="Título del artículo" required />
-            </label>
-            <label>
-              Categoría
-              <input type="text" name="categoria" placeholder="Ej: Biodiversidad" required />
-            </label>
-            <label>
-              Extracto
-              <textarea name="extracto" rows="3" placeholder="Resumen breve" required></textarea>
-            </label>
-            <label>
-              Contenido
-              <textarea name="contenido" rows="8" placeholder="Texto completo de la entrada" required></textarea>
-            </label>
-            <label>
-              Imagen destacada
-              <input type="file" name="imagen" accept="image/*" />
-            </label>
-            <div class="preview">
-              <div class="preview-media">
-                <img id="blog-preview-image" alt="Previsualización de imagen" />
-              </div>
-              <div>
-                <p class="tag" id="blog-preview-category">Sin categoría</p>
-                <p class="preview-title" id="blog-preview-title">Título de la entrada</p>
-                <p class="preview-excerpt" id="blog-preview-excerpt">Aquí aparecerá el extracto.</p>
-              </div>
+          <div class="modal" id="blog-modal" aria-hidden="true">
+            <div class="modal-panel">
+              <button class="modal-close" type="button" aria-label="Cerrar">×</button>
+              <h3 id="blog-modal-title">Nueva entrada</h3>
+              <form class="form" id="blog-form" autocomplete="off">
+                <input type="hidden" name="post_id" />
+                <label>
+                  Título
+                  <input type="text" name="titulo" placeholder="Título del artículo" required />
+                </label>
+                <label>
+                  Categoría
+                  <input type="text" name="categoria" placeholder="Ej: Biodiversidad" required />
+                </label>
+                <label>
+                  Extracto
+                  <textarea name="extracto" rows="3" placeholder="Resumen breve" required></textarea>
+                </label>
+                <label>
+                  Contenido
+                  <textarea name="contenido" rows="8" placeholder="Texto completo de la entrada" required></textarea>
+                </label>
+                <label>
+                  Imagen destacada
+                  <input type="file" name="imagen" accept="image/*" />
+                </label>
+                <div class="preview compact">
+                  <div class="preview-media">
+                    <img id="blog-preview-image" alt="Previsualización de imagen" />
+                  </div>
+                  <div>
+                    <p class="tag" id="blog-preview-category">Sin categoría</p>
+                    <p class="preview-title" id="blog-preview-title">Título de la entrada</p>
+                    <p class="preview-excerpt" id="blog-preview-excerpt">Aquí aparecerá el extracto.</p>
+                  </div>
+                </div>
+                <div class="actions">
+                  <button type="submit" id="blog-submit">Publicar</button>
+                </div>
+                <p class="note" id="blog-message"></p>
+              </form>
             </div>
-            <div class="actions">
-              <button type="submit" id="blog-submit">Publicar</button>
-            </div>
-            <p class="note" id="blog-message"></p>
-          </form>
+          </div>
 
           <div class="list" id="blog-list"></div>
         </div>
@@ -84,42 +91,65 @@ import Footer from "../components/ui/Footer.astro";
           <div class="panel-header">
             <h2>Subir imágenes a la galería</h2>
             <div class="panel-actions">
+              <button type="button" class="secondary" id="gallery-new">Nueva imagen</button>
               <button type="button" class="secondary" id="gallery-cancel" hidden>Cancelar edición</button>
             </div>
           </div>
-          <form class="form" id="gallery-form" autocomplete="off">
-            <input type="hidden" name="image_id" />
-            <label>
-              Título o descripción
-              <input type="text" name="titulo" placeholder="Descripción corta" required />
+          <div class="panel-tools">
+            <label class="checkbox">
+              <input type="checkbox" id="gallery-featured-only" />
+              Mostrar solo destacadas
             </label>
-            <label>
-              Detalle
-              <textarea name="detalle" rows="3" placeholder="Detalle adicional de la imagen"></textarea>
-            </label>
-            <label>
-              Texto alternativo
-              <input type="text" name="alt" placeholder="Texto alternativo para accesibilidad" required />
-            </label>
-            <label>
-              Imagen
-              <input type="file" name="imagen" accept="image/*" />
-            </label>
-            <div class="preview">
-              <div class="preview-media">
-                <img id="gallery-preview-image" alt="Previsualización de imagen" />
-              </div>
-              <div>
-                <p class="preview-title" id="gallery-preview-title">Descripción de la imagen</p>
-                <p class="preview-excerpt" id="gallery-preview-detail">Detalle de la imagen</p>
-                <p class="preview-excerpt" id="gallery-preview-alt">Texto alternativo</p>
-              </div>
+            <div class="limit-control">
+              <label for="gallery-featured-limit">Máximo en home</label>
+              <input type="number" id="gallery-featured-limit" min="1" max="12" step="1" value="6" />
+              <button type="button" class="secondary" id="gallery-featured-save">Guardar límite</button>
             </div>
-            <div class="actions">
-              <button type="submit" id="gallery-submit">Subir imagen</button>
+          </div>
+          <p class="note" id="gallery-settings-message"></p>
+          <div class="modal" id="gallery-modal" aria-hidden="true">
+            <div class="modal-panel">
+              <button class="modal-close" type="button" aria-label="Cerrar">×</button>
+              <h3 id="gallery-modal-title">Nueva imagen</h3>
+              <form class="form" id="gallery-form" autocomplete="off">
+                <input type="hidden" name="image_id" />
+                <label>
+                  Título o descripción
+                  <input type="text" name="titulo" placeholder="Descripción corta" required />
+                </label>
+                <label>
+                  Detalle
+                  <textarea name="detalle" rows="3" placeholder="Detalle adicional de la imagen"></textarea>
+                </label>
+                <label>
+                  Texto alternativo
+                  <input type="text" name="alt" placeholder="Texto alternativo para accesibilidad" required />
+                </label>
+                <label class="checkbox">
+                  <input type="checkbox" name="destacada" />
+                  Mostrar en galería destacada (home)
+                </label>
+                <label>
+                  Imagen
+                  <input type="file" name="imagen" accept="image/*" />
+                </label>
+                <div class="preview compact">
+                  <div class="preview-media">
+                    <img id="gallery-preview-image" alt="Previsualización de imagen" />
+                  </div>
+                  <div>
+                    <p class="preview-title" id="gallery-preview-title">Descripción de la imagen</p>
+                    <p class="preview-excerpt" id="gallery-preview-detail">Detalle de la imagen</p>
+                    <p class="preview-excerpt" id="gallery-preview-alt">Texto alternativo</p>
+                  </div>
+                </div>
+                <div class="actions">
+                  <button type="submit" id="gallery-submit">Subir imagen</button>
+                </div>
+                <p class="note" id="gallery-message"></p>
+              </form>
             </div>
-            <p class="note" id="gallery-message"></p>
-          </form>
+          </div>
 
           <div class="list" id="gallery-list"></div>
         </div>
@@ -231,6 +261,12 @@ import Footer from "../components/ui/Footer.astro";
     margin-bottom: 1.5rem;
   }
 
+  .panel-tools {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
   .form {
     display: grid;
     gap: 1.2rem;
@@ -241,6 +277,29 @@ import Footer from "../components/ui/Footer.astro";
     gap: 0.5rem;
     font-weight: 500;
     color: var(--bg-ink);
+  }
+
+  .checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 500;
+  }
+
+  .checkbox input {
+    width: 18px;
+    height: 18px;
+  }
+
+  .limit-control {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .limit-control label {
+    font-weight: 600;
   }
 
   input,
@@ -269,12 +328,12 @@ import Footer from "../components/ui/Footer.astro";
 
   .preview-media {
     width: 100%;
-    max-width: 220px;
+    max-width: 200px;
   }
 
   .preview-media img {
     width: 100%;
-    height: 160px;
+    height: 140px;
     object-fit: cover;
     border-radius: 12px;
     background: rgba(0, 0, 0, 0.08);
@@ -384,11 +443,12 @@ import Footer from "../components/ui/Footer.astro";
 
   .list-card {
     display: grid;
-    gap: 1rem;
+    gap: 0.75rem;
     align-items: center;
-    padding: 1rem 1.2rem;
-    border-radius: 16px;
+    padding: 0.85rem 1rem;
+    border-radius: 14px;
     background: var(--paper-2);
+    cursor: pointer;
   }
 
   .list-actions {
@@ -397,17 +457,104 @@ import Footer from "../components/ui/Footer.astro";
     flex-wrap: wrap;
   }
 
+  .drag-handle {
+    background: transparent;
+    border: 1px dashed rgba(0, 0, 0, 0.25);
+    color: var(--muted);
+    padding: 0.6rem 0.9rem;
+  }
+
+  .drag-handle:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .list-card[draggable="true"] {
+    cursor: grab;
+  }
+
+  .list-card.is-dragging {
+    opacity: 0.7;
+    cursor: grabbing;
+  }
+
   .meta {
     margin: 0;
     font-size: 0.85rem;
     color: var(--muted);
   }
 
+  .tag {
+    text-transform: uppercase;
+    letter-spacing: 0.2rem;
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin: 0 0 0.35rem;
+  }
+
   .thumb img {
-    width: 120px;
-    height: 90px;
+    width: 96px;
+    height: 72px;
     object-fit: cover;
     border-radius: 10px;
+  }
+
+  .excerpt {
+    margin: 0.25rem 0 0;
+    color: var(--muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 3000;
+    padding: 1.5rem;
+  }
+
+  .modal.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal-panel {
+    width: min(720px, 92vw);
+    max-height: 90vh;
+    overflow: auto;
+    background: var(--paper);
+    border-radius: 18px;
+    padding: 1.5rem;
+    position: relative;
+    box-shadow: var(--shadow);
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.85rem;
+    border: none;
+    background: transparent;
+    font-size: 1.6rem;
+    color: var(--muted);
+    padding: 0.2rem 0.4rem;
+  }
+
+  .modal-close:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .preview.compact {
+    padding: 0.75rem;
   }
 
   @media (min-width: 700px) {

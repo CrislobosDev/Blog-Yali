@@ -1,12 +1,31 @@
 ---
-const fotos = [
-  { src: "https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636650659-bajo.webp", alt: "Laguna del humedal" },
-  { src: "https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636647799-colaptes-pitius.webp", alt: "Colaptes pitius" },
-  { src: "https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636648503-matanza.webp", alt: "Paisaje costero" },
-  { src: "https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636647220-anairetes-parulus.webp", alt: "Anairetes parulus" },
-  { src: "https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636649262-pelicano.webp", alt: "Pelícano" },
-  { src: "https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636645192-albufera-garza-boyera.webp", alt: "Garza Boyera" },
-];
+import { supabase } from "../../lib/supabaseClient";
+
+const { data: featuredSetting, error: featuredError } = await supabase
+  .from("site_settings")
+  .select("value")
+  .eq("key", "featured_gallery_limit")
+  .maybeSingle();
+
+if (featuredError) {
+  console.error("Error al cargar límite de destacadas:", featuredError);
+}
+
+const featuredLimit = Math.max(1, Number(featuredSetting?.value) || 6);
+
+const { data: fotos, error } = await supabase
+  .from("imagenes")
+  .select("id, url_publica, alt_text, descripcion, detalle, destacada_orden")
+  .eq("destacada", true)
+  .order("destacada_orden", { ascending: true, nullsFirst: false })
+  .order("created_at", { ascending: false })
+  .limit(featuredLimit);
+
+if (error) {
+  console.error("Error al cargar fotos destacadas:", error);
+}
+
+const fotosDestacadas = fotos ?? [];
 ---
 
 <section class="pictures">
@@ -16,12 +35,29 @@ const fotos = [
       <h2>Fotografías del Yali</h2>
     </div>
     <div class="grid">
-      {fotos.map((foto) => (
-        <figure>
-          <img src={foto.src} alt={foto.alt} loading="lazy" />
-          <figcaption>{foto.alt}</figcaption>
-        </figure>
-      ))}
+      {fotosDestacadas.length === 0 ? (
+        <div class="empty">
+          <p>Aún no hay fotos destacadas.</p>
+          <p>Publica imágenes desde el panel para que aparezcan aquí.</p>
+        </div>
+      ) : (
+        fotosDestacadas.map((foto) => (
+          <figure>
+            <img
+              src={foto.url_publica}
+              alt={foto.alt_text ?? "Fotografía del humedal"}
+              loading="lazy"
+            />
+            <figcaption>
+              {foto.descripcion ?? foto.alt_text ?? "Sin descripción"}
+              {foto.detalle ? <span class="caption-detail">{foto.detalle}</span> : null}
+            </figcaption>
+          </figure>
+        ))
+      )}
+    </div>
+    <div class="cta">
+      <a class="button" href="/galeria">Ver galería completa</a>
     </div>
   </div>
 </section>
@@ -80,5 +116,46 @@ const fotos = [
     padding: 0.9rem 1rem 1.1rem;
     font-size: 0.95rem;
     color: var(--muted);
+  }
+
+  .caption-detail {
+    display: block;
+    font-size: 0.85rem;
+    color: rgba(89, 96, 88, 0.8);
+    margin-top: 0.25rem;
+  }
+
+  .empty {
+    background: var(--paper);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    color: var(--muted);
+    grid-column: 1 / -1;
+  }
+
+  .empty p {
+    margin: 0 0 0.5rem;
+  }
+
+  .cta {
+    margin-top: 2.5rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .button {
+    background: var(--accent);
+    color: white;
+    border-radius: 999px;
+    padding: 0.9rem 1.8rem;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(47, 107, 76, 0.25);
   }
 </style>
