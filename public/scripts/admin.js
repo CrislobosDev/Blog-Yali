@@ -23,6 +23,7 @@ const section = document.querySelector(".page");
 const logoutButton = document.getElementById("logout");
 
 const blogForm = document.getElementById("blog-form");
+const blogIdInput = blogForm?.querySelector("[name='post_id']");
 const blogMessage = document.getElementById("blog-message");
 const blogList = document.getElementById("blog-list");
 const blogSubmit = document.getElementById("blog-submit");
@@ -34,8 +35,11 @@ const blogPreviewImage = document.getElementById("blog-preview-image");
 const blogPreviewTitle = document.getElementById("blog-preview-title");
 const blogPreviewExcerpt = document.getElementById("blog-preview-excerpt");
 const blogPreviewCategory = document.getElementById("blog-preview-category");
+const blogContentInput = blogForm?.querySelector("[name='contenido']");
+const blogContentPreview = document.getElementById("blog-content-preview");
 
 const galleryForm = document.getElementById("gallery-form");
+const galleryIdInput = galleryForm?.querySelector("[name='image_id']");
 const galleryMessage = document.getElementById("gallery-message");
 const galleryList = document.getElementById("gallery-list");
 const gallerySubmit = document.getElementById("gallery-submit");
@@ -174,7 +178,7 @@ const compressImage = async (file, options = {}) => {
 
 const resetBlogForm = () => {
   blogForm?.reset();
-  blogForm?.querySelector("[name='post_id']")?.setAttribute("value", "");
+  if (blogIdInput instanceof HTMLInputElement) blogIdInput.value = "";
   if (blogSubmit) blogSubmit.textContent = "Publicar";
   if (blogCancel) blogCancel.hidden = true;
   blogForm?.removeAttribute("data-image");
@@ -182,6 +186,10 @@ const resetBlogForm = () => {
   if (blogPreviewTitle) blogPreviewTitle.textContent = "Título de la entrada";
   if (blogPreviewExcerpt) blogPreviewExcerpt.textContent = "Aquí aparecerá el extracto.";
   if (blogPreviewCategory) blogPreviewCategory.textContent = "Sin categoría";
+  if (blogContentInput instanceof HTMLTextAreaElement) {
+    blogContentInput.style.height = "";
+  }
+  if (blogContentPreview) blogContentPreview.textContent = "";
 };
 
 const openModal = (modalEl) => {
@@ -210,6 +218,12 @@ const openGalleryModal = (mode = "new") => {
   openModal(galleryModal);
 };
 
+const resizeTextarea = (el) => {
+  if (!(el instanceof HTMLTextAreaElement)) return;
+  el.style.height = "auto";
+  el.style.height = `${el.scrollHeight}px`;
+};
+
 const closeBlogModal = () => {
   resetBlogForm();
   setMessage(blogMessage, "", "info");
@@ -224,7 +238,7 @@ const closeGalleryModal = () => {
 
 const resetGalleryForm = () => {
   galleryForm?.reset();
-  galleryForm?.querySelector("[name='image_id']")?.setAttribute("value", "");
+  if (galleryIdInput instanceof HTMLInputElement) galleryIdInput.value = "";
   if (gallerySubmit) gallerySubmit.textContent = "Subir imagen";
   if (galleryCancel) galleryCancel.hidden = true;
   galleryForm?.removeAttribute("data-image");
@@ -267,6 +281,12 @@ blogForm?.querySelector("[name='titulo']")?.addEventListener("input", (event) =>
 blogForm?.querySelector("[name='extracto']")?.addEventListener("input", (event) => {
   const value = event.target?.value ?? "";
   if (blogPreviewExcerpt) blogPreviewExcerpt.textContent = value || "Aquí aparecerá el extracto.";
+});
+
+blogContentInput?.addEventListener("input", (event) => {
+  resizeTextarea(event.target);
+  const value = event.target?.value ?? "";
+  if (blogContentPreview) blogContentPreview.textContent = value;
 });
 
 blogForm?.querySelector("[name='categoria']")?.addEventListener("input", (event) => {
@@ -363,7 +383,14 @@ const loadBlogPosts = async () => {
     card.className = "list-card";
 
     card.innerHTML = `
-      <div>
+      <div class="thumb">
+        ${
+          post.image_url
+            ? `<img src="${post.image_url}" alt="${post.title ?? "Entrada"}" />`
+            : "<div class='thumb-empty'>Sin imagen</div>"
+        }
+      </div>
+      <div class="list-body">
         <p class="tag">${post.category ?? "Sin categoría"}</p>
         <h3>${post.title}</h3>
         <p class="excerpt">${post.excerpt ?? ""}</p>
@@ -377,7 +404,7 @@ const loadBlogPosts = async () => {
 
     const editButton = card.querySelector("[data-action='edit']");
     editButton?.addEventListener("click", () => {
-      blogForm?.querySelector("[name='post_id']")?.setAttribute("value", String(post.id));
+      if (blogIdInput instanceof HTMLInputElement) blogIdInput.value = String(post.id);
       const titleInput = blogForm?.querySelector("[name='titulo']");
       const categoryInput = blogForm?.querySelector("[name='categoria']");
       const excerptInput = blogForm?.querySelector("[name='extracto']");
@@ -386,7 +413,10 @@ const loadBlogPosts = async () => {
       if (titleInput) titleInput.value = post.title ?? "";
       if (categoryInput) categoryInput.value = post.category ?? "";
       if (excerptInput) excerptInput.value = post.excerpt ?? "";
-      if (contentInput) contentInput.value = post.content ?? "";
+      const fullContent = post.content ?? post.contenido ?? "";
+      if (contentInput) contentInput.value = fullContent;
+      resizeTextarea(contentInput);
+      if (blogContentPreview) blogContentPreview.textContent = fullContent;
 
       blogForm?.setAttribute("data-image", post.image_url ?? "");
       if (blogPreviewImage) {
@@ -452,15 +482,15 @@ const loadGalleryItems = async () => {
     card.dataset.id = String(item.id);
     if (onlyFeatured) card.setAttribute("draggable", "true");
 
+    const brief = item.detalle || item.alt_text || "";
     card.innerHTML = `
       <div class="thumb">
         <img src="${item.url_publica}" alt="${item.alt_text ?? "Imagen"}" />
       </div>
-      <div>
+      <div class="list-body">
         ${item.destacada ? "<p class='tag'>Destacada</p>" : ""}
         <h3>${item.descripcion ?? "Sin descripción"}</h3>
-        <p class="excerpt">${item.alt_text ?? ""}</p>
-        ${item.detalle ? `<p class="excerpt">${item.detalle}</p>` : ""}
+        <p class="excerpt">${brief}</p>
         <p class="meta">${formatDate(item.created_at)}</p>
       </div>
       <div class="list-actions">
@@ -472,7 +502,7 @@ const loadGalleryItems = async () => {
 
     const editButton = card.querySelector("[data-action='edit']");
     editButton?.addEventListener("click", () => {
-      galleryForm?.querySelector("[name='image_id']")?.setAttribute("value", String(item.id));
+      if (galleryIdInput instanceof HTMLInputElement) galleryIdInput.value = String(item.id);
       const titleInput = galleryForm?.querySelector("[name='titulo']");
       const detailInput = galleryForm?.querySelector("[name='detalle']");
       const altInput = galleryForm?.querySelector("[name='alt']");
@@ -525,7 +555,7 @@ blogForm?.addEventListener("submit", async (event) => {
 
   const formData = new FormData(blogForm);
   const file = formData.get("imagen");
-  const postId = formData.get("post_id");
+  const postId = blogIdInput instanceof HTMLInputElement ? blogIdInput.value : formData.get("post_id");
   const existingImage = blogForm.getAttribute("data-image");
 
   let imageUrl = existingImage || null;
@@ -577,7 +607,8 @@ galleryForm?.addEventListener("submit", async (event) => {
 
   const formData = new FormData(galleryForm);
   const file = formData.get("imagen");
-  const imageId = formData.get("image_id");
+  const imageId =
+    galleryIdInput instanceof HTMLInputElement ? galleryIdInput.value : formData.get("image_id");
   const existingImage = galleryForm.getAttribute("data-image");
   const existingOrder = galleryForm.getAttribute("data-featured-order");
 
@@ -598,7 +629,8 @@ galleryForm?.addEventListener("submit", async (event) => {
     return;
   }
 
-  const isFeatured = galleryFeatured instanceof HTMLInputElement && galleryFeatured.checked;
+  const featuredInput = galleryForm?.querySelector("input[name='destacada']");
+  const isFeatured = featuredInput instanceof HTMLInputElement && featuredInput.checked;
   const payload = {
     url_publica: imageUrl,
     alt_text: formData.get("alt"),
@@ -614,16 +646,28 @@ galleryForm?.addEventListener("submit", async (event) => {
   }
 
   if (imageId) {
-    const { error } = await supabase.from("imagenes").update(payload).eq("id", imageId);
+    const { data: updatedRows, error } = await supabase
+      .from("imagenes")
+      .update(payload)
+      .eq("id", imageId)
+      .select("id");
     if (error) {
-      setMessage(galleryMessage, "Error al actualizar la imagen.", "error");
+      setMessage(galleryMessage, `Error al actualizar la imagen: ${error.message}`, "error");
+      return;
+    }
+    if (!updatedRows || updatedRows.length === 0) {
+      setMessage(galleryMessage, "No se pudo actualizar (permiso o RLS).", "error");
       return;
     }
     setMessage(galleryMessage, "Imagen actualizada correctamente.", "success");
   } else {
-    const { error } = await supabase.from("imagenes").insert(payload);
+    const { data: insertedRows, error } = await supabase.from("imagenes").insert(payload).select("id");
     if (error) {
-      setMessage(galleryMessage, "Error al guardar la imagen.", "error");
+      setMessage(galleryMessage, `Error al guardar la imagen: ${error.message}`, "error");
+      return;
+    }
+    if (!insertedRows || insertedRows.length === 0) {
+      setMessage(galleryMessage, "No se pudo guardar (permiso o RLS).", "error");
       return;
     }
     setMessage(galleryMessage, "Imagen publicada en la galería.", "success");

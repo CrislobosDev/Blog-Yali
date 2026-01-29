@@ -48,10 +48,7 @@ const fotosDestacadas = fotos ?? [];
               alt={foto.alt_text ?? "Fotografía del humedal"}
               loading="lazy"
             />
-            <figcaption>
-              {foto.descripcion ?? foto.alt_text ?? "Sin descripción"}
-              {foto.detalle ? <span class="caption-detail">{foto.detalle}</span> : null}
-            </figcaption>
+            <figcaption>{foto.descripcion ?? foto.alt_text ?? "Sin descripción"}</figcaption>
           </figure>
         ))
       )}
@@ -116,13 +113,6 @@ const fotosDestacadas = fotos ?? [];
     padding: 0.9rem 1rem 1.1rem;
     font-size: 0.95rem;
     color: var(--muted);
-  }
-
-  .caption-detail {
-    display: block;
-    font-size: 0.85rem;
-    color: rgba(89, 96, 88, 0.8);
-    margin-top: 0.25rem;
   }
 
   .empty {
