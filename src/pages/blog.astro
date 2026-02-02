@@ -6,7 +6,7 @@ import { supabase } from "../lib/supabaseClient";
 
 const { data: posts, error } = await supabase
   .from("blog_posts")
-  .select("id, title, excerpt, image_url, category, published_at")
+  .select("id, title, excerpt, content, image_url, category, published_at")
   .order("published_at", { ascending: false });
 
 if (error) {
@@ -23,54 +23,69 @@ const blogPosts = posts ?? [];
       <p class="kicker">Noticias y curiosidades</p>
       <h1>Blog del Humedal</h1>
       <p class="lead">
-        Aquí podrás encontrar artículos con imágenes y texto sobre flora, fauna y actividades
-        de conservación. El contenido se publica desde el panel de administración.
+        Aquí podrás encontrar artículos con imágenes y texto sobre flora, fauna
+        y actividades de conservación. El contenido se publica desde el panel de
+        administración.
       </p>
 
       <div class="grid">
-        {blogPosts.length === 0 ? (
-          <div class="empty">
-            <p>Aún no hay entradas publicadas.</p>
-            <p>Vuelve pronto para leer nuevas historias del humedal.</p>
-          </div>
-        ) : (
-          blogPosts.map((post) => (
-            <article
-              class="card card-surface card-hover media-zoom"
-              key={post.id}
-              data-title={post.title}
-              data-category={post.category ?? ""}
-              data-excerpt={post.excerpt ?? ""}
-              data-content={encodeURIComponent(post.content ?? "")}
-              data-image={post.image_url ?? ""}
-              data-date={post.published_at ?? ""}
-            >
-              {post.image_url && (
-                <div class="card-image">
-                  <img src={post.image_url} alt={post.title} loading="lazy" decoding="async" />
-                </div>
-              )}
-              <div class="card-body">
-                {post.category && <p class="tag">{post.category}</p>}
-                <h2>{post.title}</h2>
-                {post.excerpt && <p class="excerpt">{post.excerpt}</p>}
-                {post.published_at && (
-                  <p class="date">
-                    {new Date(post.published_at).toLocaleDateString("es-CL", {
-                      day: "2-digit",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </p>
+        {
+          blogPosts.length === 0 ? (
+            <div class="empty">
+              <p>Aún no hay entradas publicadas.</p>
+              <p>Vuelve pronto para leer nuevas historias del humedal.</p>
+            </div>
+          ) : (
+            blogPosts.map((post) => (
+              <article
+                class="card card-surface card-hover media-zoom"
+                data-title={post.title}
+                data-category={post.category ?? ""}
+                data-excerpt={post.excerpt ?? ""}
+                data-content={encodeURIComponent(post.content ?? "")}
+                data-image={post.image_url ?? ""}
+                data-date={post.published_at ?? ""}
+              >
+                {post.image_url && (
+                  <div class="card-image">
+                    <img
+                      src={post.image_url}
+                      alt={post.title}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
                 )}
-              </div>
-            </article>
-          ))
-        )}
+                <div class="card-body">
+                  {post.category && <p class="tag">{post.category}</p>}
+                  <h2>{post.title}</h2>
+                  {post.excerpt && <p class="excerpt">{post.excerpt}</p>}
+                  {post.published_at && (
+                    <p class="date">
+                      {new Date(post.published_at).toLocaleDateString("es-CL", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </p>
+                  )}
+                </div>
+              </article>
+            ))
+          )
+        }
       </div>
       <div class="modal" id="blog-modal" aria-hidden="true">
-        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-          <button class="modal-close" type="button" aria-label="Cerrar">×</button>
+        <div class="modal-overlay" id="modal-overlay"></div>
+        <div
+          class="modal-content"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          <button class="modal-close" type="button" aria-label="Cerrar"
+            >×</button
+          >
           <div class="modal-hero">
             <img id="modal-image" alt="" />
           </div>
@@ -89,90 +104,106 @@ const blogPosts = posts ?? [];
 </Layout>
 
 <script>
-  const modal = document.getElementById("blog-modal");
-  const modalImage = document.getElementById("modal-image");
-  const modalTitle = document.getElementById("modal-title");
-  const modalCategory = document.getElementById("modal-category");
-  const modalDate = document.getElementById("modal-date");
-  const modalExcerpt = document.getElementById("modal-excerpt");
-  const modalContent = document.getElementById("modal-content");
-  const closeButton = document.querySelector(".modal-close");
+  document.addEventListener("astro:page-load", () => {
+    const modal = document.getElementById("blog-modal");
+    const overlay = document.getElementById("modal-overlay");
+    const modalImage = document.getElementById("modal-image");
+    const modalTitle = document.getElementById("modal-title");
+    const modalCategory = document.getElementById("modal-category");
+    const modalDate = document.getElementById("modal-date");
+    const modalExcerpt = document.getElementById("modal-excerpt");
+    const modalContent = document.getElementById("modal-content");
+    const closeButton = document.querySelector(".modal-close");
 
-  const formatDate = (value) => {
-    if (!value) return "";
-    return new Date(value).toLocaleDateString("es-CL", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    });
-  };
+    const formatDate = (value) => {
+      if (!value) return "";
+      return new Date(value).toLocaleDateString("es-CL", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      });
+    };
 
-  const escapeHtml = (value) =>
-    value
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/\"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+    const escapeHtml = (value) =>
+      value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 
-  const renderContent = (value) => {
-    if (!value) return "";
-    const escaped = escapeHtml(value);
-    const paragraphs = escaped.split(/\n{2,}/).map((block) => block.replace(/\n/g, "<br />"));
-    return `<p>${paragraphs.join("</p><p>")}</p>`;
-  };
+    const renderContent = (value) => {
+      if (!value) return "";
+      const escaped = escapeHtml(value);
+      const paragraphs = escaped
+        .split(/\n{2,}/)
+        .map((block) => block.replace(/\n/g, "<br />"));
+      return `<p>${paragraphs.join("</p><p>")}</p>`;
+    };
 
-  const openModal = (card) => {
-    if (!modal) return;
-    const title = card.getAttribute("data-title") || "";
-    const category = card.getAttribute("data-category") || "";
-    const excerpt = card.getAttribute("data-excerpt") || "";
-    const contentRaw = card.getAttribute("data-content") || "";
-    const content = contentRaw ? decodeURIComponent(contentRaw) : "";
-    const image = card.getAttribute("data-image") || "";
-    const date = card.getAttribute("data-date") || "";
+    const openModal = (card) => {
+      if (!modal) return;
+      const title = card.getAttribute("data-title") || "";
+      const category = card.getAttribute("data-category") || "";
+      const excerpt = card.getAttribute("data-excerpt") || "";
+      const contentRaw = card.getAttribute("data-content") || "";
+      const content = contentRaw ? decodeURIComponent(contentRaw) : "";
+      const image = card.getAttribute("data-image") || "";
+      const date = card.getAttribute("data-date") || "";
 
-    if (modalImage) {
-      if (image) {
-        modalImage.setAttribute("src", image);
-        modalImage.setAttribute("alt", title);
-        modalImage.style.display = "block";
-      } else {
-        modalImage.removeAttribute("src");
-        modalImage.style.display = "none";
+      if (modalImage) {
+        if (image) {
+          modalImage.setAttribute("src", image);
+          modalImage.setAttribute("alt", title);
+          modalImage.style.display = "block";
+        } else {
+          modalImage.removeAttribute("src");
+          modalImage.style.display = "none";
+        }
       }
-    }
 
-    if (modalTitle) modalTitle.textContent = title;
-    if (modalCategory) {
-      modalCategory.textContent = category;
-      modalCategory.style.display = category ? "inline-block" : "none";
-    }
-    if (modalDate) modalDate.textContent = formatDate(date);
-    if (modalExcerpt) modalExcerpt.textContent = excerpt;
-    if (modalContent) modalContent.innerHTML = renderContent(content);
+      if (modalTitle) modalTitle.textContent = title;
+      if (modalCategory) {
+        modalCategory.textContent = category;
+        modalCategory.style.display = category ? "inline-block" : "none";
+      }
+      if (modalDate) modalDate.textContent = formatDate(date);
+      if (modalExcerpt) modalExcerpt.textContent = excerpt;
+      if (modalContent) modalContent.innerHTML = renderContent(content);
 
-    modal.setAttribute("aria-hidden", "false");
-    modal.classList.add("is-open");
-  };
+      modal.setAttribute("aria-hidden", "false");
+      modal.classList.add("is-open");
+      document.body.style.overflow = "hidden"; // Prevent scrolling
+    };
 
-  document.querySelectorAll(".card").forEach((card) => {
-    card.addEventListener("click", () => openModal(card));
-  });
+    document.querySelectorAll(".card").forEach((card) => {
+      card.addEventListener("click", () => openModal(card));
+    });
 
-  const closeModal = () => {
-    if (!modal) return;
-    modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
-  };
+    const closeModal = () => {
+      if (!modal) return;
+      modal.classList.remove("is-open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = ""; // Restore scrolling
+    };
 
-  modal?.addEventListener("click", (event) => {
-    if (event.target === modal) closeModal();
-  });
+    overlay?.addEventListener("click", closeModal);
+    closeButton?.addEventListener("click", closeModal);
 
-  closeButton?.addEventListener("click", closeModal);
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeModal();
+    const handleKeydown = (event) => {
+      if (event.key === "Escape" && modal?.classList.contains("is-open"))
+        closeModal();
+    };
+    document.addEventListener("keydown", handleKeydown);
+
+    document.addEventListener(
+      "astro:before-swap",
+      () => {
+        document.removeEventListener("keydown", handleKeydown);
+        document.body.style.overflow = "";
+      },
+      { once: true },
+    );
   });
 </script>
 
@@ -271,7 +302,14 @@ const blogPosts = posts ?? [];
     pointer-events: none;
     transition: opacity 0.2s ease;
     z-index: 2000;
-    padding: 2rem;
+    padding: 1rem;
+    z-index: 3000;
+  }
+
+  .modal-overlay {
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(4px);
   }
 
   .modal.is-open {
@@ -281,8 +319,9 @@ const blogPosts = posts ?? [];
 
   .modal-content {
     background: var(--paper);
-    border-radius: 18px;
-    max-width: 860px;
+    border-radius: 24px;
+    max-width: 800px;
+    position: relative;
     width: 100%;
     max-height: 85vh;
     overflow: auto;
