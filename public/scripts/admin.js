@@ -136,7 +136,8 @@ const removeImageByUrl = async (url) => {
   if (!url) return;
   const path = extractPathFromPublicUrl(url);
   if (!path) return;
-  await supabase.storage.from(STORAGE_BUCKET).remove([path]);
+  const { error } = await supabase.storage.from(STORAGE_BUCKET).remove([path]);
+  if (error) throw error;
 };
 
 const uploadImage = async (file, folder) => {
@@ -380,13 +381,13 @@ const loadBlogPosts = async () => {
 
   posts.forEach((post) => {
     const card = document.createElement("article");
-    card.className = "list-card";
+    card.className = "list-card card-surface card-border card-hover media-zoom";
 
     card.innerHTML = `
       <div class="thumb">
         ${
           post.image_url
-            ? `<img src="${post.image_url}" alt="${post.title ?? "Entrada"}" />`
+            ? `<img src="${post.image_url}" alt="${post.title ?? "Entrada"}" loading="lazy" decoding="async" />`
             : "<div class='thumb-empty'>Sin imagen</div>"
         }
       </div>
@@ -403,7 +404,8 @@ const loadBlogPosts = async () => {
     `;
 
     const editButton = card.querySelector("[data-action='edit']");
-    editButton?.addEventListener("click", () => {
+    editButton?.addEventListener("click", (event) => {
+      event.stopPropagation();
       if (blogIdInput instanceof HTMLInputElement) blogIdInput.value = String(post.id);
       const titleInput = blogForm?.querySelector("[name='titulo']");
       const categoryInput = blogForm?.querySelector("[name='categoria']");
@@ -433,12 +435,42 @@ const loadBlogPosts = async () => {
       openBlogModal("edit");
     });
 
-    card.querySelector("[data-action='delete']")?.addEventListener("click", async () => {
+    card.querySelector("[data-action='delete']")?.addEventListener("click", async (event) => {
+      event.stopPropagation();
       if (!confirm("¿Eliminar esta entrada?")) return;
-      if (post.image_url) await removeImageByUrl(post.image_url);
-      await supabase.from("blog_posts").delete().eq("id", post.id);
-      loadBlogPosts();
-      showToast("Entrada eliminada.", "success");
+      try {
+        const { error } = await supabase.from("blog_posts").delete().eq("id", post.id);
+        if (error) {
+          showToast(`No se pudo eliminar: ${error.message}`, "error");
+          return;
+        }
+        const { data: remaining, error: checkError } = await supabase
+          .from("blog_posts")
+          .select("id")
+          .eq("id", post.id)
+          .maybeSingle();
+        if (checkError) {
+          showToast(`No se pudo verificar el borrado: ${checkError.message}`, "error");
+          return;
+        }
+        if (remaining?.id) {
+          showToast("No se pudo eliminar (permiso o RLS).", "error");
+          return;
+        }
+        if (post.image_url) {
+          try {
+            await removeImageByUrl(post.image_url);
+          } catch (error) {
+            showToast("Entrada eliminada, pero no se pudo borrar el archivo.", "error");
+            loadBlogPosts();
+            return;
+          }
+        }
+        loadBlogPosts();
+        showToast("Entrada eliminada.", "success");
+      } catch (error) {
+        showToast("No se pudo eliminar la entrada.", "error");
+      }
     });
 
     card.addEventListener("click", (event) => {
@@ -478,14 +510,14 @@ const loadGalleryItems = async () => {
 
   items.forEach((item) => {
     const card = document.createElement("article");
-    card.className = "list-card";
+    card.className = "list-card card-surface card-border card-hover media-zoom";
     card.dataset.id = String(item.id);
     if (onlyFeatured) card.setAttribute("draggable", "true");
 
     const brief = item.detalle || item.alt_text || "";
     card.innerHTML = `
       <div class="thumb">
-        <img src="${item.url_publica}" alt="${item.alt_text ?? "Imagen"}" />
+        <img src="${item.url_publica}" alt="${item.alt_text ?? "Imagen"}" loading="lazy" decoding="async" />
       </div>
       <div class="list-body">
         ${item.destacada ? "<p class='tag'>Destacada</p>" : ""}
@@ -501,7 +533,8 @@ const loadGalleryItems = async () => {
     `;
 
     const editButton = card.querySelector("[data-action='edit']");
-    editButton?.addEventListener("click", () => {
+    editButton?.addEventListener("click", (event) => {
+      event.stopPropagation();
       if (galleryIdInput instanceof HTMLInputElement) galleryIdInput.value = String(item.id);
       const titleInput = galleryForm?.querySelector("[name='titulo']");
       const detailInput = galleryForm?.querySelector("[name='detalle']");
@@ -529,12 +562,40 @@ const loadGalleryItems = async () => {
       openGalleryModal("edit");
     });
 
-    card.querySelector("[data-action='delete']")?.addEventListener("click", async () => {
+    card.querySelector("[data-action='delete']")?.addEventListener("click", async (event) => {
+      event.stopPropagation();
       if (!confirm("¿Eliminar esta imagen?")) return;
-      await removeImageByUrl(item.url_publica);
-      await supabase.from("imagenes").delete().eq("id", item.id);
-      loadGalleryItems();
-      showToast("Imagen eliminada.", "success");
+      try {
+        const { error } = await supabase.from("imagenes").delete().eq("id", item.id);
+        if (error) {
+          showToast(`No se pudo eliminar: ${error.message}`, "error");
+          return;
+        }
+        const { data: remaining, error: checkError } = await supabase
+          .from("imagenes")
+          .select("id")
+          .eq("id", item.id)
+          .maybeSingle();
+        if (checkError) {
+          showToast(`No se pudo verificar el borrado: ${checkError.message}`, "error");
+          return;
+        }
+        if (remaining?.id) {
+          showToast("No se pudo eliminar (permiso o RLS).", "error");
+          return;
+        }
+        try {
+          await removeImageByUrl(item.url_publica);
+        } catch (error) {
+          showToast("Imagen eliminada, pero no se pudo borrar el archivo.", "error");
+          loadGalleryItems();
+          return;
+        }
+        loadGalleryItems();
+        showToast("Imagen eliminada.", "success");
+      } catch (error) {
+        showToast("No se pudo eliminar la imagen.", "error");
+      }
     });
 
     card.addEventListener("click", (event) => {

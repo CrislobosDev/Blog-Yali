@@ -42,7 +42,7 @@ const fotosDestacadas = fotos ?? [];
         </div>
       ) : (
         fotosDestacadas.map((foto) => (
-          <figure>
+          <figure class="card-surface card-hover media-zoom">
             <img
               src={foto.url_publica}
               alt={foto.alt_text ?? "Fotografía del humedal"}
@@ -92,22 +92,14 @@ const fotosDestacadas = fotos ?? [];
 
   figure {
     margin: 0;
-    background: var(--paper);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow);
   }
 
   img {
     width: 100%;
     height: 220px;
     object-fit: cover;
-    transition: transform 0.3s ease;
   }
 
-  figure:hover img {
-    transform: scale(1.05);
-  }
 
   figcaption {
     padding: 0.9rem 1rem 1.1rem;

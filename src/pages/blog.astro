@@ -36,7 +36,7 @@ const blogPosts = posts ?? [];
         ) : (
           blogPosts.map((post) => (
             <article
-              class="card"
+              class="card card-surface card-hover media-zoom"
               key={post.id}
               data-title={post.title}
               data-category={post.category ?? ""}
@@ -47,7 +47,7 @@ const blogPosts = posts ?? [];
             >
               {post.image_url && (
                 <div class="card-image">
-                  <img src={post.image_url} alt={post.title} loading="lazy" />
+                  <img src={post.image_url} alt={post.title} loading="lazy" decoding="async" />
                 </div>
               )}
               <div class="card-body">
@@ -214,10 +214,6 @@ const blogPosts = posts ?? [];
   }
 
   .card {
-    background: var(--paper);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow);
     display: grid;
     cursor: pointer;
   }

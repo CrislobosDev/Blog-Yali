@@ -7,17 +7,49 @@ const navItems = [
 ];
 
 const currentPath = Astro.url.pathname;
-const isActive = (href) => (href === "/" ? currentPath === "/" : currentPath.startsWith(href));
+const isActive = (href) =>
+  href === "/" ? currentPath === "/" : currentPath.startsWith(href);
 ---
 
 <header class="site-header" data-menu="closed">
   <div class="container header-inner">
     <a class="brand" href="/" aria-label="Inicio">
-      <img src="https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636652439-logo.webp" alt="Yali Salvaje" width="200" height="68" />
+      <img
+        src="https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636652439-logo.webp"
+        alt="Yali Salvaje"
+        width="200"
+        height="68"
+      />
     </a>
 
     <nav class="nav-desktop" aria-label="Principal">
-      {navItems.map((item) => (
+      {
+        navItems.map((item) => (
+          <a
+            href={item.href}
+            class={isActive(item.href) ? "is-active" : undefined}
+            aria-current={isActive(item.href) ? "page" : undefined}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <button
+      class="menu-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="menu-movil"
+    >
+      <span class="menu-text">Menú</span>
+      <span class="menu-icon" aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <nav class="nav-mobile" id="menu-movil" aria-label="Menú móvil">
+    {
+      navItems.map((item) => (
         <a
           href={item.href}
           class={isActive(item.href) ? "is-active" : undefined}
@@ -25,25 +57,8 @@ const isActive = (href) => (href === "/" ? currentPath === "/" : currentPath.sta
         >
           {item.label}
         </a>
-      ))}
-    </nav>
-
-    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu-movil">
-      <span class="menu-text">Menú</span>
-      <span class="menu-icon" aria-hidden="true"></span>
-    </button>
-  </div>
-
-  <nav class="nav-mobile" id="menu-movil" aria-label="Menú móvil">
-    {navItems.map((item) => (
-      <a
-        href={item.href}
-        class={isActive(item.href) ? "is-active" : undefined}
-        aria-current={isActive(item.href) ? "page" : undefined}
-      >
-        {item.label}
-      </a>
-    ))}
+      ))
+    }
   </nav>
 </header>
 
@@ -54,7 +69,7 @@ const isActive = (href) => (href === "/" ? currentPath === "/" : currentPath.sta
     z-index: 50;
     backdrop-filter: blur(18px);
     background: color-mix(in srgb, var(--bg-dark), transparent 20%);
-    color: #f3f7f2;
+    color: #ffffff;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
@@ -87,26 +102,25 @@ const isActive = (href) => (href === "/" ? currentPath === "/" : currentPath.sta
 
   .nav-desktop a::after,
   .nav-mobile a::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: -0.3rem;
-    width: 0;
-    height: 2px;
-    background: var(--accent-2);
-    transition: width 0.3s ease;
+    content: none;
   }
 
-  .nav-desktop a:hover::after,
-  .nav-mobile a:hover::after,
-  .nav-desktop a.is-active::after,
-  .nav-mobile a.is-active::after {
-    width: 100%;
+  .nav-desktop a,
+  .nav-mobile a {
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.85);
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    transition: all 0.3s ease;
   }
 
+  .nav-desktop a:hover,
+  .nav-mobile a:hover,
   .nav-desktop a.is-active,
   .nav-mobile a.is-active {
-    color: var(--accent-2);
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    backdrop-filter: blur(4px);
   }
 
   .menu-toggle {
@@ -152,16 +166,20 @@ const isActive = (href) => (href === "/" ? currentPath === "/" : currentPath.sta
     display: grid;
     gap: 1rem;
     padding: 0 1.5rem 1.5rem;
-    transform-origin: top;
-    transform: scaleY(0);
-    height: 0;
+    max-height: 0;
     overflow: hidden;
-    transition: transform 0.3s ease, height 0.3s ease;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition:
+      max-height 0.35s ease,
+      opacity 0.25s ease,
+      transform 0.35s ease;
   }
 
   .site-header[data-menu="open"] .nav-mobile {
-    transform: scaleY(1);
-    height: auto;
+    max-height: 320px;
+    opacity: 1;
+    transform: translateY(0);
   }
 
   .site-header[data-menu="open"] .menu-icon {
@@ -186,6 +204,18 @@ const isActive = (href) => (href === "/" ? currentPath === "/" : currentPath.sta
       display: none;
     }
   }
+
+  @media (max-width: 839px) {
+    .site-header {
+      max-height: 96px;
+      overflow: hidden;
+      transition: max-height 0.35s ease;
+    }
+
+    .site-header[data-menu="open"] {
+      max-height: 420px;
+    }
+  }
 </style>
 
 <script>
@@ -199,5 +229,4 @@ const isActive = (href) => (href === "/" ? currentPath === "/" : currentPath.sta
       toggle.setAttribute("aria-expanded", String(!isOpen));
     });
   }
-
 </script>

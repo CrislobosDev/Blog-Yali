@@ -11,8 +11,8 @@ import Footer from "../components/ui/Footer.astro";
       <p class="kicker">Panel de administración</p>
       <h1>Gestión de contenidos</h1>
       <p class="lead">
-        Desde aquí podrás subir imágenes y entradas para el blog y la galería. Este panel ya
-        se conecta a Supabase para guardar archivos y datos.
+        Desde aquí podrás subir imágenes y entradas para el blog y la galería.
+        Este panel ya se conecta a Supabase para guardar archivos y datos.
       </p>
 
       <div class="auth-banner" data-state="checking">
@@ -20,14 +20,36 @@ import Footer from "../components/ui/Footer.astro";
       </div>
 
       <div class="tabs" data-tab="blog">
-        <div class="tab-list" role="tablist" aria-label="Secciones de administración">
-          <button class="tab" type="button" role="tab" aria-selected="true" data-tab="blog">
+        <div
+          class="tab-list"
+          role="tablist"
+          aria-label="Secciones de administración"
+        >
+          <button
+            class="tab"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            data-tab="blog"
+          >
             Blog
           </button>
-          <button class="tab" type="button" role="tab" aria-selected="false" data-tab="galeria">
+          <button
+            class="tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            data-tab="galeria"
+          >
             Galería
           </button>
-          <button class="tab" type="button" role="tab" aria-selected="false" data-tab="perfil">
+          <button
+            class="tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            data-tab="perfil"
+          >
             Perfil
           </button>
         </div>
@@ -36,31 +58,55 @@ import Footer from "../components/ui/Footer.astro";
           <div class="panel-header">
             <h2>Publicar entrada</h2>
             <div class="panel-actions">
-              <button type="button" class="secondary" id="blog-new">Nueva entrada</button>
-              <button type="button" class="secondary" id="blog-cancel" hidden>Cancelar edición</button>
+              <button type="button" class="secondary" id="blog-new"
+                >Nueva entrada</button
+              >
+              <button type="button" class="secondary" id="blog-cancel" hidden
+                >Cancelar edición</button
+              >
             </div>
           </div>
           <div class="modal" id="blog-modal" aria-hidden="true">
             <div class="modal-panel">
-              <button class="modal-close" type="button" aria-label="Cerrar">×</button>
+              <button class="modal-close" type="button" aria-label="Cerrar"
+                >×</button
+              >
               <h3 id="blog-modal-title">Nueva entrada</h3>
               <form class="form" id="blog-form" autocomplete="off">
                 <input type="hidden" name="post_id" />
                 <label>
                   Título
-                  <input type="text" name="titulo" placeholder="Título del artículo" required />
+                  <input
+                    type="text"
+                    name="titulo"
+                    placeholder="Título del artículo"
+                    required
+                  />
                 </label>
                 <label>
                   Categoría
-                  <input type="text" name="categoria" placeholder="Ej: Biodiversidad" required />
+                  <input
+                    type="text"
+                    name="categoria"
+                    placeholder="Ej: Biodiversidad"
+                    required
+                  />
                 </label>
                 <label>
                   Extracto
-                  <textarea name="extracto" rows="3" placeholder="Resumen breve" required></textarea>
+                  <textarea
+                    name="extracto"
+                    rows="3"
+                    placeholder="Resumen breve"
+                    required></textarea>
                 </label>
                 <label>
                   Contenido
-                  <textarea name="contenido" rows="12" placeholder="Texto completo de la entrada" required></textarea>
+                  <textarea
+                    name="contenido"
+                    rows="12"
+                    placeholder="Texto completo de la entrada"
+                    required></textarea>
                 </label>
                 <p class="field-label">Contenido completo (vista previa)</p>
                 <div class="content-preview" id="blog-content-preview"></div>
@@ -70,12 +116,19 @@ import Footer from "../components/ui/Footer.astro";
                 </label>
                 <div class="preview compact">
                   <div class="preview-media">
-                    <img id="blog-preview-image" alt="Previsualización de imagen" />
+                    <img
+                      id="blog-preview-image"
+                      alt="Previsualización de imagen"
+                    />
                   </div>
                   <div>
                     <p class="tag" id="blog-preview-category">Sin categoría</p>
-                    <p class="preview-title" id="blog-preview-title">Título de la entrada</p>
-                    <p class="preview-excerpt" id="blog-preview-excerpt">Aquí aparecerá el extracto.</p>
+                    <p class="preview-title" id="blog-preview-title">
+                      Título de la entrada
+                    </p>
+                    <p class="preview-excerpt" id="blog-preview-excerpt">
+                      Aquí aparecerá el extracto.
+                    </p>
                   </div>
                 </div>
                 <div class="actions">
@@ -93,8 +146,12 @@ import Footer from "../components/ui/Footer.astro";
           <div class="panel-header">
             <h2>Subir imágenes a la galería</h2>
             <div class="panel-actions">
-              <button type="button" class="secondary" id="gallery-new">Nueva imagen</button>
-              <button type="button" class="secondary" id="gallery-cancel" hidden>Cancelar edición</button>
+              <button type="button" class="secondary" id="gallery-new"
+                >Nueva imagen</button
+              >
+              <button type="button" class="secondary" id="gallery-cancel" hidden
+                >Cancelar edición</button
+              >
             </div>
           </div>
           <div class="panel-tools">
@@ -104,28 +161,52 @@ import Footer from "../components/ui/Footer.astro";
             </label>
             <div class="limit-control">
               <label for="gallery-featured-limit">Máximo en home</label>
-              <input type="number" id="gallery-featured-limit" min="1" max="12" step="1" value="6" />
-              <button type="button" class="secondary" id="gallery-featured-save">Guardar límite</button>
+              <input
+                type="number"
+                id="gallery-featured-limit"
+                min="1"
+                max="12"
+                step="1"
+                value="6"
+              />
+              <button type="button" class="secondary" id="gallery-featured-save"
+                >Guardar límite</button
+              >
             </div>
           </div>
           <p class="note" id="gallery-settings-message"></p>
           <div class="modal" id="gallery-modal" aria-hidden="true">
             <div class="modal-panel">
-              <button class="modal-close" type="button" aria-label="Cerrar">×</button>
+              <button class="modal-close" type="button" aria-label="Cerrar"
+                >×</button
+              >
               <h3 id="gallery-modal-title">Nueva imagen</h3>
               <form class="form" id="gallery-form" autocomplete="off">
                 <input type="hidden" name="image_id" />
                 <label>
                   Título o descripción
-                  <input type="text" name="titulo" placeholder="Descripción corta" required />
+                  <input
+                    type="text"
+                    name="titulo"
+                    placeholder="Descripción corta"
+                    required
+                  />
                 </label>
                 <label>
                   Detalle
-                  <textarea name="detalle" rows="3" placeholder="Detalle adicional de la imagen"></textarea>
+                  <textarea
+                    name="detalle"
+                    rows="3"
+                    placeholder="Detalle adicional de la imagen"></textarea>
                 </label>
                 <label>
                   Texto alternativo
-                  <input type="text" name="alt" placeholder="Texto alternativo para accesibilidad" required />
+                  <input
+                    type="text"
+                    name="alt"
+                    placeholder="Texto alternativo para accesibilidad"
+                    required
+                  />
                 </label>
                 <label class="checkbox">
                   <input type="checkbox" name="destacada" />
@@ -137,16 +218,26 @@ import Footer from "../components/ui/Footer.astro";
                 </label>
                 <div class="preview compact">
                   <div class="preview-media">
-                    <img id="gallery-preview-image" alt="Previsualización de imagen" />
+                    <img
+                      id="gallery-preview-image"
+                      alt="Previsualización de imagen"
+                    />
                   </div>
                   <div>
-                    <p class="preview-title" id="gallery-preview-title">Descripción de la imagen</p>
-                    <p class="preview-excerpt" id="gallery-preview-detail">Detalle de la imagen</p>
-                    <p class="preview-excerpt" id="gallery-preview-alt">Texto alternativo</p>
+                    <p class="preview-title" id="gallery-preview-title">
+                      Descripción de la imagen
+                    </p>
+                    <p class="preview-excerpt" id="gallery-preview-detail">
+                      Detalle de la imagen
+                    </p>
+                    <p class="preview-excerpt" id="gallery-preview-alt">
+                      Texto alternativo
+                    </p>
                   </div>
                 </div>
                 <div class="actions">
-                  <button type="submit" id="gallery-submit">Subir imagen</button>
+                  <button type="submit" id="gallery-submit">Subir imagen</button
+                  >
                 </div>
                 <p class="note" id="gallery-message"></p>
               </form>
@@ -159,16 +250,30 @@ import Footer from "../components/ui/Footer.astro";
         <div class="tab-panel" role="tabpanel" hidden data-panel="perfil">
           <h2>Cuenta</h2>
           <p class="note">Sesión iniciada. Puedes cerrar sesión aquí.</p>
-          <button type="button" class="secondary" id="logout">Cerrar sesión</button>
+          <button type="button" class="secondary" id="logout"
+            >Cerrar sesión</button
+          >
         </div>
       </div>
     </div>
-    <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div
+      class="toast"
+      id="toast"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+    </div>
   </section>
   <Footer />
 </Layout>
 
-<script define:vars={{ supabaseUrl: import.meta.env.PUBLIC_SUPABASE_URL, supabaseAnonKey: import.meta.env.PUBLIC_SUPABASE_ANON_KEY }}>
+<script
+  define:vars={{
+    supabaseUrl: import.meta.env.PUBLIC_SUPABASE_URL,
+    supabaseAnonKey: import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+  }}
+>
   window.__SUPABASE__ = {
     url: supabaseUrl,
     key: supabaseAnonKey,
@@ -369,7 +474,9 @@ import Footer from "../components/ui/Footer.astro";
     border-radius: 999px;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
   button:hover {
@@ -421,7 +528,9 @@ import Footer from "../components/ui/Footer.astro";
     box-shadow: var(--shadow);
     opacity: 0;
     transform: translateY(10px);
-    transition: opacity 0.25s ease, transform 0.25s ease;
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease;
     z-index: 2000;
     max-width: 320px;
   }
@@ -443,56 +552,61 @@ import Footer from "../components/ui/Footer.astro";
     border-left: 4px solid #6b5d2f;
   }
 
-  .list {
+  :global(.list) {
     margin-top: 2.5rem;
     display: grid;
-    gap: 1rem;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   }
 
-  .list-card {
+  :global(.list-card) {
     display: grid;
-    gap: 0.75rem;
-    padding: 0.85rem 1rem;
-    border-radius: 12px;
-    background: var(--paper-2);
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    gap: 0.6rem;
+    padding: 0;
     cursor: pointer;
   }
 
-  .list-actions {
+  :global(.list-actions) {
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
+    padding: 0 0.85rem 0.85rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
   }
 
-  .drag-handle {
+  :global(.list-actions button) {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.85rem;
+  }
+
+  :global(.drag-handle) {
     background: transparent;
     border: 1px dashed rgba(0, 0, 0, 0.25);
     color: var(--muted);
     padding: 0.6rem 0.9rem;
   }
 
-  .drag-handle:hover {
+  :global(.drag-handle:hover) {
     transform: none;
     box-shadow: none;
   }
 
-  .list-card[draggable="true"] {
+  :global(.list-card[draggable="true"]) {
     cursor: grab;
   }
 
-  .list-card.is-dragging {
+  :global(.list-card.is-dragging) {
     opacity: 0.7;
     cursor: grabbing;
   }
 
-  .meta {
+  :global(.meta) {
     margin: 0;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--muted);
   }
 
-  .tag {
+  :global(.tag) {
     text-transform: uppercase;
     letter-spacing: 0.2rem;
     font-size: 0.7rem;
@@ -500,17 +614,31 @@ import Footer from "../components/ui/Footer.astro";
     margin: 0 0 0.35rem;
   }
 
-  .list-body h3 {
+  :global(.list-body h3) {
     margin: 0;
+    font-size: 0.95rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
-  .excerpt {
+  :global(.list-body) {
+    padding: 0.7rem 0.85rem 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  :global(.excerpt) {
     margin: 0.25rem 0 0;
     color: var(--muted);
     display: -webkit-box;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    font-size: 0.85rem;
+    line-height: 1.35;
+    max-height: 1.35em;
   }
 
   .modal {
@@ -573,23 +701,67 @@ import Footer from "../components/ui/Footer.astro";
     min-height: 120px;
   }
 
-  .thumb {
-    width: 76px;
-    height: 76px;
+  :global(.thumb) {
+    width: 100%;
+    height: 150px;
   }
 
-  .thumb img {
+  :global(.thumb img) {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 10px;
-    display: block;
-  }
-
-  .thumb-empty {
     width: 100%;
     height: 100%;
-    border-radius: 10px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+  }
+
+  /* Enhanced File Input */
+  input[type="file"] {
+    border: 2px dashed var(--muted-light);
+    background: var(--paper-2);
+    padding: 3rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    width: 100%;
+    border-radius: var(--radius);
+    transition: all 0.2s ease;
+    color: var(--muted);
+  }
+
+  input[type="file"]::file-selector-button {
+    display: none;
+  }
+
+  input[type="file"]:hover,
+  input[type="file"]:focus {
+    border-color: var(--accent);
+    background: var(--accent-light);
+    color: var(--accent-2);
+  }
+
+  .form {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .form label {
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+  }
+
+  /* Modal improvements */
+  .modal-panel {
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  :global(.thumb-empty) {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
     background: rgba(0, 0, 0, 0.08);
     display: grid;
     place-items: center;
@@ -599,6 +771,15 @@ import Footer from "../components/ui/Footer.astro";
     padding: 0.25rem;
   }
 
+  .list-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 28px rgba(20, 25, 24, 0.18);
+  }
+
+  .list-card:hover .thumb img {
+    transform: scale(1.04);
+  }
+
   @media (min-width: 700px) {
     .preview {
       grid-template-columns: auto 1fr;
@@ -606,9 +787,8 @@ import Footer from "../components/ui/Footer.astro";
   }
 
   @media (min-width: 900px) {
-    .list-card {
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
+    :global(.list) {
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     }
   }
 </style>

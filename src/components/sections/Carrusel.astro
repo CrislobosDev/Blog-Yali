@@ -1,10 +1,25 @@
 ---
 const images = [
-  { src: "https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636649979-xolmis-pyrope.webp", alt: "Xolmis pyrope" },
-  { src: "https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636647220-anairetes-parulus.webp", alt: "Anairetes parulus" },
-  { src: "https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636647799-colaptes-pitius.webp", alt: "Colaptes pitius" },
-  { src: "https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636645192-albufera-garza-boyera.webp", alt: "Garza Boyera" },
-  { src: "https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636649262-pelicano.webp", alt: "Pelícano" },
+  {
+    src: "https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636649979-xolmis-pyrope.webp",
+    alt: "Xolmis pyrope",
+  },
+  {
+    src: "https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636647220-anairetes-parulus.webp",
+    alt: "Anairetes parulus",
+  },
+  {
+    src: "https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636647799-colaptes-pitius.webp",
+    alt: "Colaptes pitius",
+  },
+  {
+    src: "https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636645192-albufera-garza-boyera.webp",
+    alt: "Garza Boyera",
+  },
+  {
+    src: "https://wkayvtztiijqpvoxtcxj.supabase.co/storage/v1/object/public/media/site/1769636649262-pelicano.webp",
+    alt: "Pelícano",
+  },
 ];
 ---
 
@@ -13,13 +28,18 @@ const images = [
   <div class="hero-text container">
     <!-- <p class="hero-kicker">Santuario de biodiversidad</p> -->
     <h1>Bienvenido al Humedal El Yali</h1>
-    <p class="hero-subtitle">Un santuario natural ubicado en la Región de Valparaíso, clave para la conservación de aves, flora y ecosistemas costeros.</p>
+    <p class="hero-subtitle">
+      Un santuario natural ubicado en la Región de Valparaíso, clave para la
+      conservación de aves, flora y ecosistemas costeros.
+    </p>
   </div>
 
   <div class="carousel" aria-hidden="true">
-    {images.map((image) => (
-      <img src={image.src} alt={image.alt} loading="lazy" />
-    ))}
+    {
+      images.map((image) => (
+        <img src={image.src} alt={image.alt} loading="lazy" />
+      ))
+    }
   </div>
 </section>
 
@@ -29,7 +49,9 @@ const images = [
 
   function showNextImage() {
     images.forEach((img, i) => {
-      img.style.opacity = i === index ? "1" : "0";
+      if (img instanceof HTMLElement) {
+        img.style.opacity = i === index ? "1" : "0";
+      }
     });
     index = (index + 1) % images.length;
   }
@@ -47,13 +69,17 @@ const images = [
     display: grid;
     place-items: center;
     overflow: hidden;
-    color: #f6f9f4;
+    color: #ffffff;
   }
 
   .hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(120deg, rgba(12, 18, 14, 0.65), rgba(12, 18, 14, 0.15));
+    background: linear-gradient(
+      120deg,
+      rgba(12, 18, 14, 0.65),
+      rgba(12, 18, 14, 0.15)
+    );
     z-index: 1;
   }
 
@@ -71,7 +97,6 @@ const images = [
     font-size: 1.25rem;
     color: rgba(246, 249, 244, 0.8);
     margin: 0;
-    
   }
 
   h1 {
@@ -111,7 +136,9 @@ const images = [
       width: 0;
       flex-grow: 1;
       opacity: 0.6;
-      transition: flex-grow 0.5s ease, opacity 0.5s ease;
+      transition:
+        flex-grow 0.5s ease,
+        opacity 0.5s ease;
     }
 
     .carousel img:hover {

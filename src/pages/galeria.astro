@@ -22,39 +22,51 @@ const imagenesGaleria = fotos ?? [];
     <div class="container">
       <p class="kicker">Registro fotográfico</p>
       <h1>Galería del Humedal El Yali</h1>
-      <p class="lead">
-        Las imágenes se publican desde el panel de administración y se mostrarán aquí.
-      </p>
 
       <div class="grid-galeria">
-        {imagenesGaleria.length === 0 ? (
-          <div class="empty">
-            <p>Aún no hay fotos en la galería.</p>
-            <p>Muy pronto compartiremos nuevas capturas del humedal.</p>
-          </div>
-        ) : (
-          imagenesGaleria.map((foto) => (
-            <figure class="foto-item" key={foto.id}>
-              <img
-                src={foto.url_publica}
-                alt={foto.alt_text ?? "Fotografía del humedal"}
-                loading="lazy"
-                data-full={foto.url_publica}
-                data-caption={foto.descripcion ?? foto.alt_text ?? "Sin descripción"}
-                data-detail={foto.detalle ?? ""}
-              />
-              <figcaption>
-                {foto.descripcion ?? foto.alt_text ?? "Sin descripción"}
-                {foto.detalle ? <span class="caption-detail">{foto.detalle}</span> : null}
-              </figcaption>
-            </figure>
-          ))
-        )}
+        {
+          imagenesGaleria.length === 0 ? (
+            <div class="empty">
+              <p>Aún no hay fotos en la galería.</p>
+              <p>Muy pronto compartiremos nuevas capturas del humedal.</p>
+            </div>
+          ) : (
+            imagenesGaleria.map((foto) => (
+              <figure
+                class="foto-item card-surface card-hover media-zoom"
+                key={foto.id}
+              >
+                <img
+                  src={foto.url_publica}
+                  alt={foto.alt_text ?? "Fotografía del humedal"}
+                  loading="lazy"
+                  data-full={foto.url_publica}
+                  data-caption={
+                    foto.descripcion ?? foto.alt_text ?? "Sin descripción"
+                  }
+                  data-detail={foto.detalle ?? ""}
+                />
+                <figcaption>
+                  {foto.descripcion ?? foto.alt_text ?? "Sin descripción"}
+                  {foto.detalle ? (
+                    <span class="caption-detail">{foto.detalle}</span>
+                  ) : null}
+                </figcaption>
+              </figure>
+            ))
+          )
+        }
       </div>
       <div class="lightbox" id="lightbox" aria-hidden="true">
-        <button class="lightbox-close" type="button" aria-label="Cerrar">×</button>
-        <button class="lightbox-prev" type="button" aria-label="Anterior">‹</button>
-        <button class="lightbox-next" type="button" aria-label="Siguiente">›</button>
+        <button class="lightbox-close" type="button" aria-label="Cerrar"
+          >×</button
+        >
+        <button class="lightbox-prev" type="button" aria-label="Anterior"
+          >‹</button
+        >
+        <button class="lightbox-next" type="button" aria-label="Siguiente"
+          >›</button
+        >
         <div class="lightbox-content">
           <img id="lightbox-image" alt="" />
           <div class="lightbox-meta">
@@ -82,17 +94,17 @@ const imagenesGaleria = fotos ?? [];
   const openLightbox = (img) => {
     if (!lightbox || !lightboxImage) return;
     const src = img.getAttribute("data-full") || img.src;
-      const caption =
-        img.getAttribute("data-caption") ||
-        img.closest("figure")?.querySelector("figcaption")?.textContent ||
-        img.getAttribute("alt") ||
-        "";
-      const detail = img.getAttribute("data-detail") || "";
-      lightboxImage.setAttribute("src", src);
-      lightboxImage.setAttribute("alt", img.alt || "");
-      if (lightboxCaption) {
-        lightboxCaption.textContent = detail ? `${caption} — ${detail}` : caption;
-      }
+    const caption =
+      img.getAttribute("data-caption") ||
+      img.closest("figure")?.querySelector("figcaption")?.textContent ||
+      img.getAttribute("alt") ||
+      "";
+    const detail = img.getAttribute("data-detail") || "";
+    lightboxImage.setAttribute("src", src);
+    lightboxImage.setAttribute("alt", img.alt || "");
+    if (lightboxCaption) {
+      lightboxCaption.textContent = detail ? `${caption} — ${detail}` : caption;
+    }
     lightbox.setAttribute("aria-hidden", "false");
     lightbox.classList.add("is-open");
     currentIndex = galleryImages.indexOf(img);
@@ -182,32 +194,27 @@ const imagenesGaleria = fotos ?? [];
 
   .foto-item {
     margin: 0;
-    background: var(--paper);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow);
   }
 
   .foto-item img {
     width: 100%;
-    height: 220px;
+    height: clamp(150px, 20vw, 190px);
     object-fit: cover;
     display: block;
   }
 
   .foto-item figcaption {
-    padding: 0.9rem 1rem 1.1rem;
-    font-size: 0.95rem;
+    padding: 0.75rem 0.95rem 0.9rem;
+    font-size: 0.9rem;
     color: var(--muted);
-    display: block;
-    min-height: 2.2rem;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
   }
 
   .caption-detail {
-    display: block;
-    font-size: 0.85rem;
-    color: rgba(89, 96, 88, 0.8);
-    margin-top: 0.25rem;
+    display: none;
   }
 
   .lightbox {
@@ -253,7 +260,7 @@ const imagenesGaleria = fotos ?? [];
   }
 
   .lightbox-title {
-    color: #f1f4ef;
+    color: #ffffff;
     font-size: 1.1rem;
     letter-spacing: 0.02em;
     margin: 0;
