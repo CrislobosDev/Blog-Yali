@@ -32,10 +32,7 @@ const imagenesGaleria = fotos ?? [];
             </div>
           ) : (
             imagenesGaleria.map((foto) => (
-              <figure
-                class="foto-item card-surface card-hover media-zoom"
-                key={foto.id}
-              >
+              <figure class="foto-item card-surface card-hover media-zoom">
                 <img
                   src={foto.url_publica}
                   alt={foto.alt_text ?? "Fotografía del humedal"}
@@ -80,84 +77,109 @@ const imagenesGaleria = fotos ?? [];
 </Layout>
 
 <script>
-  const lightbox = document.getElementById("lightbox");
-  const lightboxImage = document.getElementById("lightbox-image");
-  const lightboxCaption = document.getElementById("lightbox-caption");
-  const closeButton = document.querySelector(".lightbox-close");
-  const prevButton = document.querySelector(".lightbox-prev");
-  const nextButton = document.querySelector(".lightbox-next");
-  const galleryImages = Array.from(document.querySelectorAll(".foto-item img"));
-  let currentIndex = -1;
-  let touchStartX = 0;
-  let touchStartY = 0;
+  document.addEventListener("astro:page-load", () => {
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImage = document.getElementById("lightbox-image");
+    const lightboxCaption = document.getElementById("lightbox-caption");
+    const closeButton = document.querySelector(".lightbox-close");
+    const prevButton = document.querySelector(".lightbox-prev");
+    const nextButton = document.querySelector(".lightbox-next");
+    const galleryImages = Array.from(
+      document.querySelectorAll(".foto-item img"),
+    );
+    let currentIndex = -1;
+    let touchStartX = 0;
+    let touchStartY = 0;
 
-  const openLightbox = (img) => {
-    if (!lightbox || !lightboxImage) return;
-    const src = img.getAttribute("data-full") || img.src;
-    const caption =
-      img.getAttribute("data-caption") ||
-      img.closest("figure")?.querySelector("figcaption")?.textContent ||
-      img.getAttribute("alt") ||
-      "";
-    const detail = img.getAttribute("data-detail") || "";
-    lightboxImage.setAttribute("src", src);
-    lightboxImage.setAttribute("alt", img.alt || "");
-    if (lightboxCaption) {
-      lightboxCaption.textContent = detail ? `${caption} — ${detail}` : caption;
-    }
-    lightbox.setAttribute("aria-hidden", "false");
-    lightbox.classList.add("is-open");
-    currentIndex = galleryImages.indexOf(img);
-  };
+    const openLightbox = (img) => {
+      if (!lightbox || !lightboxImage) return;
+      const src = img.getAttribute("data-full") || img.src;
+      const caption =
+        img.getAttribute("data-caption") ||
+        img.closest("figure")?.querySelector("figcaption")?.textContent ||
+        img.getAttribute("alt") ||
+        "";
+      const detail = img.getAttribute("data-detail") || "";
+      lightboxImage.setAttribute("src", src);
+      lightboxImage.setAttribute("alt", img.alt || "");
+      if (lightboxCaption) {
+        lightboxCaption.textContent = detail
+          ? `${caption} — ${detail}`
+          : caption;
+      }
+      lightbox.setAttribute("aria-hidden", "false");
+      lightbox.classList.add("is-open");
+      currentIndex = galleryImages.indexOf(img);
+    };
 
-  galleryImages.forEach((img) => {
-    img.addEventListener("click", () => openLightbox(img));
-  });
+    galleryImages.forEach((img) => {
+      img.addEventListener("click", () => openLightbox(img));
+    });
 
-  const closeLightbox = () => {
-    if (!lightbox) return;
-    lightbox.classList.remove("is-open");
-    lightbox.setAttribute("aria-hidden", "true");
-    currentIndex = -1;
-  };
+    const closeLightbox = () => {
+      if (!lightbox) return;
+      lightbox.classList.remove("is-open");
+      lightbox.setAttribute("aria-hidden", "true");
+      currentIndex = -1;
+    };
 
-  const showAtIndex = (index) => {
-    if (!galleryImages.length) return;
-    const safeIndex = (index + galleryImages.length) % galleryImages.length;
-    const img = galleryImages[safeIndex];
-    if (!img) return;
-    currentIndex = safeIndex;
-    openLightbox(img);
-  };
+    const showAtIndex = (index) => {
+      if (!galleryImages.length) return;
+      const safeIndex = (index + galleryImages.length) % galleryImages.length;
+      const img = galleryImages[safeIndex];
+      if (!img) return;
+      currentIndex = safeIndex;
+      openLightbox(img);
+    };
 
-  lightbox?.addEventListener("click", (event) => {
-    if (event.target === lightbox) closeLightbox();
-  });
+    lightbox?.addEventListener("click", (event) => {
+      if (event.target === lightbox) closeLightbox();
+    });
 
-  closeButton?.addEventListener("click", closeLightbox);
-  prevButton?.addEventListener("click", () => showAtIndex(currentIndex - 1));
-  nextButton?.addEventListener("click", () => showAtIndex(currentIndex + 1));
+    closeButton?.addEventListener("click", closeLightbox);
+    prevButton?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      showAtIndex(currentIndex - 1);
+    });
+    nextButton?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      showAtIndex(currentIndex + 1);
+    });
 
-  lightboxImage?.addEventListener("touchstart", (event) => {
-    const touch = event.touches[0];
-    if (!touch) return;
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
-  });
+    lightboxImage?.addEventListener("touchstart", (event) => {
+      const touch = event.touches[0];
+      if (!touch) return;
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+    });
 
-  lightboxImage?.addEventListener("touchend", (event) => {
-    const touch = event.changedTouches[0];
-    if (!touch) return;
-    const diffX = touch.clientX - touchStartX;
-    const diffY = touch.clientY - touchStartY;
-    if (Math.abs(diffX) < 40 || Math.abs(diffY) > 80) return;
-    if (diffX > 0) showAtIndex(currentIndex - 1);
-    else showAtIndex(currentIndex + 1);
-  });
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeLightbox();
-    if (event.key === "ArrowLeft") showAtIndex(currentIndex - 1);
-    if (event.key === "ArrowRight") showAtIndex(currentIndex + 1);
+    lightboxImage?.addEventListener("touchend", (event) => {
+      const touch = event.changedTouches[0];
+      if (!touch) return;
+      const diffX = touch.clientX - touchStartX;
+      const diffY = touch.clientY - touchStartY;
+      if (Math.abs(diffX) < 40 || Math.abs(diffY) > 80) return;
+      if (diffX > 0) showAtIndex(currentIndex - 1);
+      else showAtIndex(currentIndex + 1);
+    });
+
+    const handleKeydown = (event) => {
+      if (!lightbox || !lightbox.classList.contains("is-open")) return;
+      if (event.key === "Escape") closeLightbox();
+      if (event.key === "ArrowLeft") showAtIndex(currentIndex - 1);
+      if (event.key === "ArrowRight") showAtIndex(currentIndex + 1);
+    };
+
+    document.addEventListener("keydown", handleKeydown);
+
+    // Clean up event listener before next navigation
+    document.addEventListener(
+      "astro:before-swap",
+      () => {
+        document.removeEventListener("keydown", handleKeydown);
+      },
+      { once: true },
+    );
   });
 </script>
 
