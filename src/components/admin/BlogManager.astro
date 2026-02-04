@@ -1,0 +1,103 @@
+---
+
+---
+
+<div class="panel-header">
+    <h2>Publicar entrada</h2>
+    <div class="panel-actions">
+        <button type="button" class="secondary" id="blog-new"
+            >Nueva entrada</button
+        >
+        <button type="button" class="secondary" id="blog-cancel" hidden
+            >Cancelar edición</button
+        >
+    </div>
+</div>
+
+<div class="modal" id="blog-modal" aria-hidden="true">
+    <div class="modal-panel">
+        <button class="modal-close" type="button" aria-label="Cerrar">×</button>
+        <h3 id="blog-modal-title">Nueva entrada</h3>
+        <form class="form" id="blog-form" autocomplete="off">
+            <input type="hidden" name="post_id" />
+            <label>
+                Título
+                <input
+                    type="text"
+                    name="titulo"
+                    placeholder="Título del artículo"
+                    required
+                />
+            </label>
+            <label>
+                Categoría
+                <input
+                    type="text"
+                    name="categoria"
+                    placeholder="Ej: Biodiversidad"
+                    required
+                />
+            </label>
+            <label>
+                Extracto
+                <textarea
+                    name="extracto"
+                    rows="3"
+                    placeholder="Resumen breve"
+                    required></textarea>
+            </label>
+            <label>
+                Contenido
+                <textarea
+                    name="contenido"
+                    rows="12"
+                    placeholder="Texto completo de la entrada"
+                    required></textarea>
+            </label>
+            <p class="field-label">Contenido completo (vista previa)</p>
+            <div class="content-preview" id="blog-content-preview"></div>
+            <label>
+                Imagen destacada
+                <input type="file" name="imagen" accept="image/*" />
+            </label>
+            <div class="preview compact">
+                <div class="preview-media">
+                    <img
+                        id="blog-preview-image"
+                        alt="Previsualización de imagen"
+                    />
+                </div>
+                <div>
+                    <p class="tag" id="blog-preview-category">Sin categoría</p>
+                    <p class="preview-title" id="blog-preview-title">
+                        Título de la entrada
+                    </p>
+                    <p class="preview-excerpt" id="blog-preview-excerpt">
+                        Aquí aparecerá el extracto.
+                    </p>
+                </div>
+            </div>
+            <div class="actions">
+                <button type="submit" id="blog-submit">Publicar</button>
+            </div>
+            <p class="note" id="blog-message"></p>
+        </form>
+    </div>
+</div>
+
+<div class="list" id="blog-list"></div>
+
+<style>
+    /* Scoped styles moved from admin.astro global styles where specific */
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .panel-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+</style>

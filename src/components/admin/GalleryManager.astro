@@ -1,0 +1,139 @@
+---
+
+---
+
+<div class="panel-header">
+    <h2>Subir imágenes a la galería</h2>
+    <div class="panel-actions">
+        <button type="button" class="secondary" id="gallery-new"
+            >Nueva imagen</button
+        >
+        <button type="button" class="secondary" id="gallery-cancel" hidden
+            >Cancelar edición</button
+        >
+    </div>
+</div>
+
+<div class="panel-tools">
+    <label class="checkbox">
+        <input type="checkbox" id="gallery-featured-only" />
+        Mostrar solo destacadas
+    </label>
+    <div class="limit-control">
+        <label for="gallery-featured-limit">Máximo en home</label>
+        <input
+            type="number"
+            id="gallery-featured-limit"
+            min="1"
+            max="12"
+            step="1"
+            value="6"
+        />
+        <button type="button" class="secondary" id="gallery-featured-save"
+            >Guardar límite</button
+        >
+    </div>
+</div>
+<p class="note" id="gallery-settings-message"></p>
+
+<div class="modal" id="gallery-modal" aria-hidden="true">
+    <div class="modal-panel">
+        <button class="modal-close" type="button" aria-label="Cerrar">×</button>
+        <h3 id="gallery-modal-title">Nueva imagen</h3>
+        <form class="form" id="gallery-form" autocomplete="off">
+            <input type="hidden" name="image_id" />
+            <label>
+                Título o descripción
+                <input
+                    type="text"
+                    name="titulo"
+                    placeholder="Descripción corta"
+                    required
+                />
+            </label>
+            <label>
+                Detalle
+                <textarea
+                    name="detalle"
+                    rows="3"
+                    placeholder="Detalle adicional de la imagen"></textarea>
+            </label>
+            <label>
+                Texto alternativo
+                <input
+                    type="text"
+                    name="alt"
+                    placeholder="Texto alternativo para accesibilidad"
+                    required
+                />
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" name="destacada" />
+                Mostrar en galería destacada (home)
+            </label>
+            <label>
+                Imagen
+                <input type="file" name="imagen" accept="image/*" />
+            </label>
+            <div class="preview compact">
+                <div class="preview-media">
+                    <img
+                        id="gallery-preview-image"
+                        alt="Previsualización de imagen"
+                    />
+                </div>
+                <div>
+                    <p class="preview-title" id="gallery-preview-title">
+                        Descripción de la imagen
+                    </p>
+                    <p class="preview-excerpt" id="gallery-preview-detail">
+                        Detalle de la imagen
+                    </p>
+                    <p class="preview-excerpt" id="gallery-preview-alt">
+                        Texto alternativo
+                    </p>
+                </div>
+            </div>
+            <div class="actions">
+                <button type="submit" id="gallery-submit">Subir imagen</button>
+            </div>
+            <p class="note" id="gallery-message"></p>
+        </form>
+    </div>
+</div>
+
+<div class="list" id="gallery-list"></div>
+
+<style>
+    .panel-tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        align-items: center;
+        background: var(--paper-2);
+        padding: 1rem;
+        border-radius: 12px;
+    }
+
+    .limit-control {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: var(--accent);
+    }
+</style>

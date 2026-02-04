@@ -8,6 +8,8 @@ const buildCookie = (value, url, maxAge = 3600) => {
   return `admin_session=${value}; Path=/; Max-Age=${maxAge}; SameSite=Lax;${secure}`;
 };
 
+const ADMIN_EMAIL = import.meta.env.ADMIN_EMAIL || "cristianvillalobosvv@gmail.com";
+
 export async function POST({ request }) {
   if (!supabaseUrl || !supabaseAnonKey) {
     return new Response("Missing Supabase env", { status: 500 });
@@ -25,6 +27,12 @@ export async function POST({ request }) {
   const { data, error } = await supabase.auth.getUser(accessToken);
   if (error || !data?.user) {
     return new Response("Unauthorized", { status: 401 });
+  }
+
+  // Security: Restricted to specific email
+  if (data.user.email !== ADMIN_EMAIL) {
+    console.warn(`Unauthorized access attempt by: ${data.user.email}`);
+    return new Response("Forbidden: Not an admin", { status: 403 });
   }
 
   const url = new URL(request.url);

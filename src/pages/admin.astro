@@ -2,271 +2,94 @@
 import Layout from "../layouts/Layout.astro";
 import Header from "../components/ui/Header.astro";
 import Footer from "../components/ui/Footer.astro";
+import BlogManager from "../components/admin/BlogManager.astro";
+import GalleryManager from "../components/admin/GalleryManager.astro";
+import "../styles/admin.css";
 ---
 
 <Layout title="Administración | Yali Salvaje">
   <Header />
-  <section class="page" data-auth="checking">
+
+  <main class="page-content">
     <div class="container">
-      <p class="kicker">Panel de administración</p>
-      <h1>Gestión de contenidos</h1>
-      <p class="lead">
-        Desde aquí podrás subir imágenes y entradas para el blog y la galería.
-        Este panel ya se conecta a Supabase para guardar archivos y datos.
-      </p>
+      <div class="admin-header">
+        <div class="title-group">
+          <h1>Panel de Administración</h1>
+          <div class="auth-status" data-state="checking">
+            <span class="status-dot"></span>
+            <span class="status-text">Conectando...</span>
+          </div>
+        </div>
 
-      <div class="auth-banner" data-state="checking">
-        <p>Verificando sesión...</p>
+        <nav class="admin-nav">
+          <button class="nav-tab active" data-tab="blog">
+            <span class="icon">📝</span> Blog
+          </button>
+          <button class="nav-tab" data-tab="galeria">
+            <span class="icon">🖼️</span> Galería
+          </button>
+          <button class="nav-tab logout" id="logout">
+            <span class="icon">🚪</span> Salir
+          </button>
+        </nav>
       </div>
 
-      <div class="tabs" data-tab="blog">
-        <div
-          class="tab-list"
-          role="tablist"
-          aria-label="Secciones de administración"
-        >
-          <button
-            class="tab"
-            type="button"
-            role="tab"
-            aria-selected="true"
-            data-tab="blog"
-          >
-            Blog
-          </button>
-          <button
-            class="tab"
-            type="button"
-            role="tab"
-            aria-selected="false"
-            data-tab="galeria"
-          >
-            Galería
-          </button>
-          <button
-            class="tab"
-            type="button"
-            role="tab"
-            aria-selected="false"
-            data-tab="perfil"
-          >
-            Perfil
-          </button>
-        </div>
+      <div id="view-blog" class="view-panel active">
+        <BlogManager />
+      </div>
 
-        <div class="tab-panel" role="tabpanel" data-panel="blog">
-          <div class="panel-header">
-            <h2>Publicar entrada</h2>
-            <div class="panel-actions">
-              <button type="button" class="secondary" id="blog-new"
-                >Nueva entrada</button
-              >
-              <button type="button" class="secondary" id="blog-cancel" hidden
-                >Cancelar edición</button
-              >
-            </div>
-          </div>
-          <div class="modal" id="blog-modal" aria-hidden="true">
-            <div class="modal-panel">
-              <button class="modal-close" type="button" aria-label="Cerrar"
-                >×</button
-              >
-              <h3 id="blog-modal-title">Nueva entrada</h3>
-              <form class="form" id="blog-form" autocomplete="off">
-                <input type="hidden" name="post_id" />
-                <label>
-                  Título
-                  <input
-                    type="text"
-                    name="titulo"
-                    placeholder="Título del artículo"
-                    required
-                  />
-                </label>
-                <label>
-                  Categoría
-                  <input
-                    type="text"
-                    name="categoria"
-                    placeholder="Ej: Biodiversidad"
-                    required
-                  />
-                </label>
-                <label>
-                  Extracto
-                  <textarea
-                    name="extracto"
-                    rows="3"
-                    placeholder="Resumen breve"
-                    required></textarea>
-                </label>
-                <label>
-                  Contenido
-                  <textarea
-                    name="contenido"
-                    rows="12"
-                    placeholder="Texto completo de la entrada"
-                    required></textarea>
-                </label>
-                <p class="field-label">Contenido completo (vista previa)</p>
-                <div class="content-preview" id="blog-content-preview"></div>
-                <label>
-                  Imagen destacada
-                  <input type="file" name="imagen" accept="image/*" />
-                </label>
-                <div class="preview compact">
-                  <div class="preview-media">
-                    <img
-                      id="blog-preview-image"
-                      alt="Previsualización de imagen"
-                    />
-                  </div>
-                  <div>
-                    <p class="tag" id="blog-preview-category">Sin categoría</p>
-                    <p class="preview-title" id="blog-preview-title">
-                      Título de la entrada
-                    </p>
-                    <p class="preview-excerpt" id="blog-preview-excerpt">
-                      Aquí aparecerá el extracto.
-                    </p>
-                  </div>
-                </div>
-                <div class="actions">
-                  <button type="submit" id="blog-submit">Publicar</button>
-                </div>
-                <p class="note" id="blog-message"></p>
-              </form>
-            </div>
-          </div>
-
-          <div class="list" id="blog-list"></div>
-        </div>
-
-        <div class="tab-panel" role="tabpanel" hidden data-panel="galeria">
-          <div class="panel-header">
-            <h2>Subir imágenes a la galería</h2>
-            <div class="panel-actions">
-              <button type="button" class="secondary" id="gallery-new"
-                >Nueva imagen</button
-              >
-              <button type="button" class="secondary" id="gallery-cancel" hidden
-                >Cancelar edición</button
-              >
-            </div>
-          </div>
-          <div class="panel-tools">
-            <label class="checkbox">
-              <input type="checkbox" id="gallery-featured-only" />
-              Mostrar solo destacadas
-            </label>
-            <div class="limit-control">
-              <label for="gallery-featured-limit">Máximo en home</label>
-              <input
-                type="number"
-                id="gallery-featured-limit"
-                min="1"
-                max="12"
-                step="1"
-                value="6"
-              />
-              <button type="button" class="secondary" id="gallery-featured-save"
-                >Guardar límite</button
-              >
-            </div>
-          </div>
-          <p class="note" id="gallery-settings-message"></p>
-          <div class="modal" id="gallery-modal" aria-hidden="true">
-            <div class="modal-panel">
-              <button class="modal-close" type="button" aria-label="Cerrar"
-                >×</button
-              >
-              <h3 id="gallery-modal-title">Nueva imagen</h3>
-              <form class="form" id="gallery-form" autocomplete="off">
-                <input type="hidden" name="image_id" />
-                <label>
-                  Título o descripción
-                  <input
-                    type="text"
-                    name="titulo"
-                    placeholder="Descripción corta"
-                    required
-                  />
-                </label>
-                <label>
-                  Detalle
-                  <textarea
-                    name="detalle"
-                    rows="3"
-                    placeholder="Detalle adicional de la imagen"></textarea>
-                </label>
-                <label>
-                  Texto alternativo
-                  <input
-                    type="text"
-                    name="alt"
-                    placeholder="Texto alternativo para accesibilidad"
-                    required
-                  />
-                </label>
-                <label class="checkbox">
-                  <input type="checkbox" name="destacada" />
-                  Mostrar en galería destacada (home)
-                </label>
-                <label>
-                  Imagen
-                  <input type="file" name="imagen" accept="image/*" />
-                </label>
-                <div class="preview compact">
-                  <div class="preview-media">
-                    <img
-                      id="gallery-preview-image"
-                      alt="Previsualización de imagen"
-                    />
-                  </div>
-                  <div>
-                    <p class="preview-title" id="gallery-preview-title">
-                      Descripción de la imagen
-                    </p>
-                    <p class="preview-excerpt" id="gallery-preview-detail">
-                      Detalle de la imagen
-                    </p>
-                    <p class="preview-excerpt" id="gallery-preview-alt">
-                      Texto alternativo
-                    </p>
-                  </div>
-                </div>
-                <div class="actions">
-                  <button type="submit" id="gallery-submit">Subir imagen</button
-                  >
-                </div>
-                <p class="note" id="gallery-message"></p>
-              </form>
-            </div>
-          </div>
-
-          <div class="list" id="gallery-list"></div>
-        </div>
-
-        <div class="tab-panel" role="tabpanel" hidden data-panel="perfil">
-          <h2>Cuenta</h2>
-          <p class="note">Sesión iniciada. Puedes cerrar sesión aquí.</p>
-          <button type="button" class="secondary" id="logout"
-            >Cerrar sesión</button
-          >
-        </div>
+      <div id="view-galeria" class="view-panel" hidden>
+        <GalleryManager />
       </div>
     </div>
-    <div
-      class="toast"
-      id="toast"
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-    >
-    </div>
-  </section>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </main>
+
   <Footer />
 </Layout>
+
+<script>
+  // Tab switching logic
+  const buttons = document.querySelectorAll(".nav-tab[data-tab]");
+  const views = document.querySelectorAll(".view-panel");
+
+  function switchTab(tabId) {
+    if (!tabId) return;
+
+    // Update buttons
+    buttons.forEach((btn) => {
+      if (btn instanceof HTMLElement) {
+        if (btn.dataset.tab === tabId) btn.classList.add("active");
+        else btn.classList.remove("active");
+      }
+    });
+
+    // Update views
+    views.forEach((view) => {
+      if (view.id === `view-${tabId}`) {
+        view.removeAttribute("hidden");
+        view.classList.add("active");
+      } else {
+        view.setAttribute("hidden", "");
+        view.classList.remove("active");
+      }
+    });
+
+    // Save preference
+    sessionStorage.setItem("admin-tab", tabId);
+  }
+
+  buttons.forEach((btn) => {
+    if (btn instanceof HTMLElement) {
+      btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+    }
+  });
+
+  // Restore previous tab
+  const lastTab = sessionStorage.getItem("admin-tab") || "blog";
+  switchTab(lastTab);
+</script>
 
 <script
   define:vars={{
@@ -282,241 +105,112 @@ import Footer from "../components/ui/Footer.astro";
 <script type="module" src="/scripts/admin.js"></script>
 
 <style>
-  .page {
-    padding: 7rem 0 6rem;
+  .page-content {
+    padding: 2rem 0 6rem;
+    min-height: 80vh;
   }
 
-  h1 {
-    font-family: "Alegreya", serif;
-    font-size: clamp(2.5rem, 4vw, 4rem);
-    margin: 0 0 0.75rem;
-  }
-
-  h2 {
-    font-family: "Alegreya", serif;
-    font-size: 1.8rem;
-    margin: 0;
-  }
-
-  h3 {
-    margin: 0 0 0.4rem;
-    font-size: 1.1rem;
-  }
-
-  .kicker {
-    text-transform: uppercase;
-    letter-spacing: 0.25rem;
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin: 0 0 0.5rem;
-  }
-
-  .lead {
-    font-size: 1.1rem;
-    max-width: 720px;
-  }
-
-  .auth-banner {
-    margin-top: 1.5rem;
-    background: var(--paper-2);
-    padding: 0.9rem 1.2rem;
-    border-radius: 12px;
-    color: var(--muted);
-  }
-
-  .auth-banner[data-state="ready"] {
-    background: rgba(47, 107, 76, 0.12);
-    color: var(--bg-ink);
-  }
-
-  .tabs {
-    margin-top: 2.5rem;
+  /* Admin Header Area */
+  .admin-header {
     background: var(--paper);
-    border-radius: var(--radius);
     padding: 2rem;
+    border-radius: var(--radius);
     box-shadow: var(--shadow);
+    margin-bottom: 3rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
   }
 
-  .tab-list {
-    display: flex;
-    gap: 1rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    padding-bottom: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .tab {
-    border: none;
-    background: transparent;
-    font-weight: 600;
-    font-size: 1rem;
-    padding: 0.5rem 1rem;
-    border-radius: 999px;
-    cursor: pointer;
-    color: var(--muted);
-  }
-
-  .tab[aria-selected="true"] {
-    background: var(--accent);
-    color: white;
-  }
-
-  .panel-header {
+  .title-group {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
-  }
-
-  .panel-tools {
-    display: grid;
+    flex-wrap: wrap;
     gap: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   }
 
-  .form {
-    display: grid;
-    gap: 1.2rem;
+  h1 {
+    margin: 0;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-family: "Alegreya", serif;
+    color: var(--bg-ink);
   }
 
-  label {
-    display: grid;
+  .admin-nav {
+    display: flex;
     gap: 0.5rem;
-    font-weight: 500;
-    color: var(--bg-ink);
-  }
-
-  .field-label {
-    margin: 0.25rem 0 0;
-    font-weight: 600;
-    color: var(--bg-ink);
-  }
-
-  .checkbox {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    font-weight: 500;
-  }
-
-  .checkbox input {
-    width: 18px;
-    height: 18px;
-  }
-
-  .limit-control {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .limit-control label {
-    font-weight: 600;
-  }
-
-  input,
-  textarea {
-    padding: 0.75rem 0.9rem;
-    border-radius: 12px;
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    font-family: inherit;
-    font-size: 1rem;
-  }
-
-  .actions {
-    display: flex;
-    gap: 1rem;
     flex-wrap: wrap;
   }
 
-  .preview {
-    display: grid;
-    gap: 1rem;
-    padding: 1rem;
-    border-radius: 14px;
-    background: var(--paper-2);
-    align-items: center;
-  }
-
-  .preview-media {
-    width: 100%;
-    max-width: 200px;
-  }
-
-  .preview-media img {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.08);
-  }
-
-  .preview-media img:not([src]) {
-    display: none;
-  }
-
-  .preview-title {
-    font-weight: 600;
-    margin: 0 0 0.25rem;
-  }
-
-  .preview-excerpt {
-    margin: 0;
-    color: var(--muted);
-  }
-
-  button {
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 0.85rem 1.5rem;
-    border-radius: 999px;
-    font-weight: 600;
-    cursor: pointer;
-    transition:
-      transform 0.2s ease,
-      box-shadow 0.2s ease;
-  }
-
-  button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(47, 107, 76, 0.25);
-  }
-
-  .secondary {
+  .nav-tab {
     background: transparent;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    color: var(--text);
-  }
-
-  .danger {
-    background: #b23c3c;
-    color: white;
-  }
-
-  .note {
-    margin: 0;
-    font-size: 0.9rem;
     color: var(--muted);
-    min-height: 1.2rem;
+    border: 1px solid transparent;
+    padding: 0.6rem 1.2rem;
+    border-radius: 99px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+    box-shadow: none;
   }
 
-  .note[data-status="success"] {
-    color: #256c4a;
+  .nav-tab:hover {
+    background: var(--paper-2);
+    color: var(--text);
+    transform: none;
+  }
+
+  .nav-tab.active {
+    background: var(--accent-light);
+    color: var(--accent-2);
     font-weight: 600;
   }
 
-  .note[data-status="error"] {
+  .nav-tab.logout {
+    margin-left: auto;
     color: #b23c3c;
-    font-weight: 600;
   }
 
-  .note[data-status="loading"] {
-    color: #6b5d2f;
-    font-weight: 600;
+  .nav-tab.logout:hover {
+    background: #ffeeee;
   }
 
+  /* Auth Status Badge */
+  .auth-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    background: var(--paper-2);
+    padding: 0.4rem 0.8rem;
+    border-radius: 99px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ccc;
+  }
+
+  .auth-status[data-state="ready"] .status-dot {
+    background: #2f6b4c;
+    box-shadow: 0 0 0 2px rgba(47, 107, 76, 0.2);
+  }
+
+  .auth-status[data-state="expired"] .status-dot {
+    background: #b23c3c;
+  }
+
+  /* Toast Notification */
   .toast {
     position: fixed;
     right: 1.5rem;
@@ -525,14 +219,16 @@ import Footer from "../components/ui/Footer.astro";
     color: var(--text);
     padding: 0.9rem 1.2rem;
     border-radius: 12px;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-lg);
     opacity: 0;
     transform: translateY(10px);
     transition:
       opacity 0.25s ease,
       transform 0.25s ease;
     z-index: 2000;
+    font-weight: 500;
     max-width: 320px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
   }
 
   .toast.is-visible {
@@ -543,260 +239,29 @@ import Footer from "../components/ui/Footer.astro";
   .toast[data-status="success"] {
     border-left: 4px solid #2f6b4c;
   }
-
   .toast[data-status="error"] {
     border-left: 4px solid #b23c3c;
   }
 
-  .toast[data-status="loading"] {
-    border-left: 4px solid #6b5d2f;
-  }
+  @media (max-width: 600px) {
+    .nav-tab.logout {
+      margin-left: 0;
+      width: 100%;
+      justify-content: center;
+      margin-top: 0.5rem;
+      border: 1px solid rgba(178, 60, 60, 0.2);
+    }
 
-  :global(.list) {
-    margin-top: 2.5rem;
-    display: grid;
-    gap: 1.5rem;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  }
+    .admin-nav {
+      gap: 0.25rem;
+    }
 
-  :global(.list-card) {
-    display: grid;
-    gap: 0.6rem;
-    padding: 0;
-    cursor: pointer;
-  }
-
-  :global(.list-actions) {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    padding: 0 0.85rem 0.85rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
-  }
-
-  :global(.list-actions button) {
-    padding: 0.45rem 0.85rem;
-    font-size: 0.85rem;
-  }
-
-  :global(.drag-handle) {
-    background: transparent;
-    border: 1px dashed rgba(0, 0, 0, 0.25);
-    color: var(--muted);
-    padding: 0.6rem 0.9rem;
-  }
-
-  :global(.drag-handle:hover) {
-    transform: none;
-    box-shadow: none;
-  }
-
-  :global(.list-card[draggable="true"]) {
-    cursor: grab;
-  }
-
-  :global(.list-card.is-dragging) {
-    opacity: 0.7;
-    cursor: grabbing;
-  }
-
-  :global(.meta) {
-    margin: 0;
-    font-size: 0.8rem;
-    color: var(--muted);
-  }
-
-  :global(.tag) {
-    text-transform: uppercase;
-    letter-spacing: 0.2rem;
-    font-size: 0.7rem;
-    color: var(--muted);
-    margin: 0 0 0.35rem;
-  }
-
-  :global(.list-body h3) {
-    margin: 0;
-    font-size: 0.95rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  :global(.list-body) {
-    padding: 0.7rem 0.85rem 0;
-    display: grid;
-    gap: 0.35rem;
-  }
-
-  :global(.excerpt) {
-    margin: 0.25rem 0 0;
-    color: var(--muted);
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    font-size: 0.85rem;
-    line-height: 1.35;
-    max-height: 1.35em;
-  }
-
-  .modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.55);
-    display: grid;
-    place-items: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-    z-index: 3000;
-    padding: 1.5rem;
-  }
-
-  .modal::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    backdrop-filter: blur(4px);
-    z-index: -1;
-  }
-
-  .modal.is-open {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .modal-panel {
-    width: min(720px, 92vw);
-    max-height: 90vh;
-    overflow: auto;
-    background: var(--paper);
-    border-radius: 24px;
-    padding: 2rem;
-    position: relative;
-    box-shadow: var(--shadow);
-  }
-
-  .modal-close {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.85rem;
-    border: none;
-    background: transparent;
-    font-size: 1.6rem;
-    color: var(--muted);
-    padding: 0.2rem 0.4rem;
-  }
-
-  .modal-close:hover {
-    transform: none;
-    box-shadow: none;
-  }
-
-  .preview.compact {
-    padding: 0.75rem;
-  }
-
-  .content-preview {
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 12px;
-    padding: 0.85rem 1rem;
-    background: var(--paper-2);
-    color: var(--text);
-    font-size: 0.95rem;
-    white-space: pre-wrap;
-    min-height: 120px;
-  }
-
-  :global(.thumb) {
-    width: 100%;
-    height: 150px;
-  }
-
-  :global(.thumb img) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.5s ease;
-  }
-
-  /* Enhanced File Input */
-  input[type="file"] {
-    border: 2px dashed var(--muted-light);
-    background: var(--paper-2);
-    padding: 3rem 1.5rem;
-    text-align: center;
-    cursor: pointer;
-    width: 100%;
-    border-radius: var(--radius);
-    transition: all 0.2s ease;
-    color: var(--muted);
-  }
-
-  input[type="file"]::file-selector-button {
-    display: none;
-  }
-
-  input[type="file"]:hover,
-  input[type="file"]:focus {
-    border-color: var(--accent);
-    background: var(--accent-light);
-    color: var(--accent-2);
-  }
-
-  .form {
-    display: grid;
-    gap: 1.5rem;
-  }
-
-  .form label {
-    font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--muted);
-  }
-
-  /* Modal improvements */
-  .modal-panel {
-    border: 1px solid rgba(0, 0, 0, 0.05);
-  }
-
-  :global(.thumb-empty) {
-    width: 100%;
-    height: 100%;
-    border-radius: 8px;
-    background: rgba(0, 0, 0, 0.08);
-    display: grid;
-    place-items: center;
-    color: var(--muted);
-    font-size: 0.8rem;
-    text-align: center;
-    padding: 0.25rem;
-  }
-
-  .list-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 16px 28px rgba(20, 25, 24, 0.18);
-  }
-
-  .list-card:hover .thumb img {
-    transform: scale(1.04);
-  }
-
-  @media (min-width: 700px) {
-    .preview {
-      grid-template-columns: auto 1fr;
+    .nav-tab {
+      flex: 1;
+      justify-content: center;
+      padding: 0.5rem;
+      font-size: 0.9rem;
     }
   }
+</style> }
 
-  @media (min-width: 900px) {
-    :global(.list) {
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-    }
-  }
-</style>

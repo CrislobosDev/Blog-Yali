@@ -20,14 +20,34 @@ const {
       href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@300;400;500;700&family=Alegreya:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <meta name="robots" content="index, follow" />
+    <link
+      rel="canonical"
+      href={new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin)}
+    />
+
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
+    <meta
+      property="og:image"
+      content={new URL("/og-image.jpg", Astro.site ?? Astro.url.origin)}
+    />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={Astro.url} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+    <meta
+      property="twitter:image"
+      content={new URL("/og-image.jpg", Astro.site ?? Astro.url.origin)}
+    />
     <ViewTransitions />
   </head>
   <body>

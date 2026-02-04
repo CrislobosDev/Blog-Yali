@@ -12,35 +12,105 @@ import Footer from "../components/ui/Footer.astro";
         <p class="kicker">Conversemos</p>
         <h1>Contacto</h1>
         <p class="lead">
-          Envíanos tus consultas o ideas para actividades en el humedal. Te responderemos pronto.
+          Envíanos tus consultas o ideas para actividades en el humedal. Te
+          responderemos pronto.
         </p>
       </div>
 
       <form
         class="form"
-        action="mailto:cristianvillalobosvv@gmail.com"
-        method="post"
-        enctype="text/plain"
+        name="contacto"
+        method="POST"
+        data-netlify="true"
+        id="contact-form"
+        autocomplete="off"
       >
+        <input type="hidden" name="form-name" value="contacto" />
         <label>
           Nombre
           <input type="text" name="nombre" placeholder="Tu nombre" required />
         </label>
         <label>
           Email
-          <input type="email" name="email" placeholder="tucorreo@email.com" required />
+          <input
+            type="email"
+            name="email"
+            placeholder="tucorreo@email.com"
+            required
+          />
         </label>
         <label>
           Mensaje
-          <textarea name="mensaje" rows="5" placeholder="Escribe tu consulta" required></textarea>
+          <textarea
+            name="mensaje"
+            rows="5"
+            placeholder="Escribe tu consulta"
+            required></textarea>
         </label>
-        <button type="submit">Enviar consulta</button>
-        <p class="note">Se abrirá tu cliente de correo para enviar el mensaje.</p>
+        <button type="submit" id="submit-btn">Enviar consulta</button>
+        <p class="note" id="form-message"></p>
       </form>
     </div>
   </section>
   <Footer />
 </Layout>
+
+<script>
+  const form = document.getElementById("contact-form") as HTMLFormElement;
+  const btn = document.getElementById("submit-btn") as HTMLButtonElement;
+  const msg = document.getElementById("form-message");
+
+  if (form) {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (btn) {
+        btn.textContent = "Enviando...";
+        btn.disabled = true;
+      }
+      if (msg) msg.textContent = "";
+
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch("/", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams(formData as any).toString(),
+        });
+
+        if (response.ok) {
+          if (btn) btn.textContent = "¡Enviado!";
+          if (msg) {
+            msg.textContent =
+              "Gracias por escribirnos. Te responderemos pronto.";
+            msg.setAttribute("data-status", "success");
+          }
+          form.reset();
+          setTimeout(() => {
+            if (btn) {
+              btn.textContent = "Enviar consulta";
+              btn.disabled = false;
+            }
+          }, 3000);
+        } else {
+          throw new Error("Network response was not ok");
+        }
+      } catch (error) {
+        console.error("Form error:", error);
+        if (btn) {
+          btn.textContent = "Reintentar";
+          btn.disabled = false;
+        }
+        if (msg) {
+          msg.textContent =
+            "Hubo un error al enviar. Por favor intenta más tarde.";
+          msg.setAttribute("data-status", "error");
+        }
+      }
+    });
+  }
+</script>
 
 <style>
   .page {
@@ -95,6 +165,7 @@ import Footer from "../components/ui/Footer.astro";
     border: 1px solid rgba(0, 0, 0, 0.12);
     font-family: inherit;
     font-size: 1rem;
+    width: 100%;
   }
 
   button {
@@ -105,18 +176,36 @@ import Footer from "../components/ui/Footer.astro";
     border-radius: 999px;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
-  button:hover {
+  button:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 8px 18px rgba(47, 107, 76, 0.25);
   }
 
+  button:disabled {
+    opacity: 0.7;
+    cursor: wait;
+  }
+
   .note {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--muted);
+    min-height: 1.5rem;
+  }
+
+  .note[data-status="success"] {
+    color: #2f6b4c;
+    font-weight: 600;
+  }
+
+  .note[data-status="error"] {
+    color: #b23c3c;
+    font-weight: 600;
   }
 
   @media (min-width: 900px) {

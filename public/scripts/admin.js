@@ -18,8 +18,8 @@ const STORAGE_BUCKET = "media";
 const BLOG_FOLDER = "blog";
 const GALLERY_FOLDER = "galeria";
 
-const banner = document.querySelector(".auth-banner");
-const section = document.querySelector(".page");
+const banner = document.querySelector(".auth-status");
+const bannerText = banner?.querySelector(".status-text");
 const logoutButton = document.getElementById("logout");
 
 const blogForm = document.getElementById("blog-form");
@@ -84,7 +84,7 @@ const setMessage = (el, text, type = "info") => {
 if (!supabaseUrl || !supabaseAnonKey) {
   if (banner) {
     banner.setAttribute("data-state", "expired");
-    banner.textContent = "Faltan variables de Supabase en producción.";
+    if (bannerText) bannerText.textContent = "Error de configuración";
   }
 }
 
@@ -95,9 +95,8 @@ if (!data?.session) {
 } else {
   if (banner) {
     banner.setAttribute("data-state", "ready");
-    banner.textContent = `Sesión iniciada: ${data.session.user.email}`;
+    if (bannerText) bannerText.textContent = `Conectado: ${data.session.user.email}`;
   }
-  if (section) section.setAttribute("data-auth", "ready");
 }
 
 logoutButton?.addEventListener("click", async () => {
@@ -111,9 +110,9 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     await fetch("/api/admin-session", { method: "DELETE" });
     if (banner) {
       banner.setAttribute("data-state", "expired");
-      banner.textContent = "Sesión expirada. Redirigiendo al login...";
+      if (bannerText) bannerText.textContent = "Sesión expirada";
     }
-    showToast("Sesión expirada. Redirigiendo al login...", "error");
+    showToast("Sesión expirada. Redirigiendo...", "error");
     setTimeout(() => {
       window.location.href = "/login";
     }, 1200);
@@ -385,11 +384,10 @@ const loadBlogPosts = async () => {
 
     card.innerHTML = `
       <div class="thumb">
-        ${
-          post.image_url
-            ? `<img src="${post.image_url}" alt="${post.title ?? "Entrada"}" loading="lazy" decoding="async" />`
-            : "<div class='thumb-empty'>Sin imagen</div>"
-        }
+        ${post.image_url
+        ? `<img src="${post.image_url}" alt="${post.title ?? "Entrada"}" loading="lazy" decoding="async" />`
+        : "<div class='thumb-empty'>Sin imagen</div>"
+      }
       </div>
       <div class="list-body">
         <p class="tag">${post.category ?? "Sin categoría"}</p>
