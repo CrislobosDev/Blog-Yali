@@ -2,6 +2,8 @@ const DEFAULT_MODEL = "gemini-2.5-flash";
 const MAX_QUESTION_LENGTH = 600;
 const MAX_HISTORY_MESSAGES = 10;
 const FALLBACK_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
+const MAX_RETRIES_PER_MODEL = 1;
 
 const SYSTEM_PROMPT = `
 Eres el asistente virtual oficial de Yali Salvaje.
@@ -154,6 +156,17 @@ const extractText = (responseData) => {
   return "";
 };
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const parseRetryAfterMs = (response) => {
+  const retryAfter = response?.headers?.get("retry-after");
+  const seconds = Number(retryAfter);
+  if (Number.isFinite(seconds) && seconds > 0) {
+    return Math.min(seconds * 1000, 5000);
+  }
+  return null;
+};
+
 export async function POST({ request }) {
   const apiKey = import.meta.env.GEMINI_API_KEY || import.meta.env.GOOGLE_API_KEY;
   const configuredModel = import.meta.env.GEMINI_MODEL || DEFAULT_MODEL;
@@ -196,48 +209,72 @@ export async function POST({ request }) {
   );
   let aiResponse = null;
   let lastErrorData = null;
+  const attemptErrors = [];
 
   for (const model of modelsToTry) {
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey,
-      },
-      body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: SYSTEM_PROMPT }],
-        },
-        contents,
-        generationConfig: {
-          temperature: 0.15,
-          maxOutputTokens: 340,
-          topP: 0.85,
-          topK: 40,
-        },
-      }),
-    });
+    const endpoint =
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}` +
+      ":generateContent";
 
-    if (response.ok) {
-      aiResponse = response;
+    for (let retry = 0; retry <= MAX_RETRIES_PER_MODEL; retry += 1) {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: SYSTEM_PROMPT }],
+          },
+          contents,
+          generationConfig: {
+            temperature: 0.15,
+            maxOutputTokens: 340,
+            topP: 0.85,
+            topK: 40,
+          },
+        }),
+      });
+
+      if (response.ok) {
+        aiResponse = response;
+        break;
+      }
+
+      const errorData = await response.json().catch(() => ({}));
+      lastErrorData = errorData;
+      const providerMessage = String(errorData?.error?.message || "");
+      const notFoundModel =
+        response.status === 404 || providerMessage.includes("is not found for API version");
+      attemptErrors.push({ model, status: response.status, message: providerMessage });
+
+      if (notFoundModel) {
+        break;
+      }
+
+      const shouldRetry = RETRYABLE_STATUS.has(response.status) && retry < MAX_RETRIES_PER_MODEL;
+      if (shouldRetry) {
+        const delayMs = parseRetryAfterMs(response) ?? 900 + retry * 500;
+        await sleep(delayMs);
+        continue;
+      }
+
+      if (!RETRYABLE_STATUS.has(response.status)) {
+        aiResponse = response;
+      }
       break;
     }
 
-    const errorData = await response.json().catch(() => ({}));
-    lastErrorData = errorData;
-    const providerMessage = String(errorData?.error?.message || "");
-    const notFoundModel =
-      response.status === 404 || providerMessage.includes("is not found for API version");
-
-    if (!notFoundModel) {
-      aiResponse = response;
-      break;
-    }
+    if (aiResponse) break;
   }
 
   if (!aiResponse) {
-    return Response.json({ error: "No fue posible conectarse con Gemini en este momento." }, { status: 502 });
+    console.error("Error Gemini chat-humedal (sin respuesta util):", attemptErrors);
+    return Response.json(
+      { error: "No fue posible conectarse con Gemini en este momento." },
+      { status: 502 },
+    );
   }
 
   if (!aiResponse.ok) {
@@ -247,10 +284,13 @@ export async function POST({ request }) {
     console.error("Error Gemini chat-humedal:", aiResponse.status, errorData);
 
     if (aiResponse.status === 429) {
+      const quotaDetail = typeof providerMessage === "string" ? ` Detalle: ${providerMessage}` : "";
       return Response.json(
         {
           error:
-            "El asistente no esta disponible por limite de cuota en Gemini. Revisa tu free tier y limites del proyecto.",
+            "El asistente no esta disponible por limite temporal o de cuota en Gemini. Revisa " +
+            "free tier, limites por minuto y cuota diaria del proyecto en Google AI Studio." +
+            quotaDetail,
         },
         { status: 429 },
       );
