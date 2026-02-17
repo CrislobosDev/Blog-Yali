@@ -21,6 +21,8 @@ const images = [
     alt: "Pelícano",
   },
 ];
+
+const heroImages = images;
 ---
 
 <section class="hero">
@@ -36,29 +38,45 @@ const images = [
 
   <div class="carousel" aria-hidden="true">
     {
-      images.map((image) => (
-        <img src={image.src} alt={image.alt} loading="lazy" />
+      heroImages.map((image, index) => (
+        <img
+          src={image.src}
+          alt={image.alt}
+          loading={index === 0 ? "eager" : "lazy"}
+          fetchpriority={index === 0 ? "high" : "low"}
+          decoding="async"
+        />
       ))
     }
   </div>
 </section>
 
 <script>
-  const images = document.querySelectorAll(".carousel img");
+  const heroSection = document.querySelector(".hero");
+  const carouselImages = [...(heroSection?.querySelectorAll(".carousel img") ?? [])];
   let index = 0;
 
   function showNextImage() {
-    images.forEach((img, i) => {
+    carouselImages.forEach((img, i) => {
       if (img instanceof HTMLElement) {
-        img.style.opacity = i === index ? "1" : "0";
+        img.classList.toggle("is-visible", i === index);
       }
     });
-    index = (index + 1) % images.length;
+    index = (index + 1) % carouselImages.length;
   }
 
-  if (images.length > 0 && window.matchMedia("(max-width: 959px)").matches) {
+  if (carouselImages.length > 0 && window.matchMedia("(max-width: 959px)").matches) {
+    carouselImages.forEach((img, i) => img.classList.toggle("is-visible", i === 0));
     showNextImage();
-    setInterval(showNextImage, 3500);
+    const intervalId = window.setInterval(showNextImage, 3500);
+
+    document.addEventListener(
+      "astro:before-swap",
+      () => {
+        window.clearInterval(intervalId);
+      },
+      { once: true },
+    );
   }
 </script>
 
@@ -125,6 +143,14 @@ const images = [
     object-fit: cover;
     opacity: 0;
     transition: opacity 1s ease-in-out;
+  }
+
+  .carousel img:first-child {
+    opacity: 1;
+  }
+
+  .carousel img.is-visible {
+    opacity: 1;
   }
 
   @media (min-width: 960px) {

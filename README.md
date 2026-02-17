@@ -21,6 +21,18 @@ Una galería viva de fotos, experiencias y registros de este ecosistema único u
 - [Astro](https://astro.build/)
 - [JavaScript](https://developer.mozilla.org/es/docs/Web/JavaScript)
 - CSS Modules / Tailwind CSS
+- Google Gemini API (chat del humedal)
+
+---
+
+## 🤖 Chat IA del Humedal
+
+El sitio incluye un chat en modal para responder preguntas sobre el Humedal El Yali.
+
+Variables necesarias:
+
+- `GEMINI_API_KEY`
+- `GEMINI_MODEL` (opcional, por defecto `gemini-2.5-flash`)
 
 ---
 
