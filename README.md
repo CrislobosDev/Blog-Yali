@@ -32,7 +32,10 @@ El sitio incluye un chat en modal para responder preguntas sobre el Humedal El Y
 Variables necesarias:
 
 - `GEMINI_API_KEY`
+- `GOOGLE_API_KEY` (alternativa si no usas `GEMINI_API_KEY`)
 - `GEMINI_MODEL` (opcional, por defecto `gemini-2.5-flash`)
+
+Si cambias variables de entorno en local, reinicia `npm run dev`.
 
 ---
 

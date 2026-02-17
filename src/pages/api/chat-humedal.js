@@ -155,11 +155,14 @@ const extractText = (responseData) => {
 };
 
 export async function POST({ request }) {
-  const apiKey = import.meta.env.GEMINI_API_KEY;
+  const apiKey = import.meta.env.GEMINI_API_KEY || import.meta.env.GOOGLE_API_KEY;
   const configuredModel = import.meta.env.GEMINI_MODEL || DEFAULT_MODEL;
 
   if (!apiKey) {
-    return Response.json({ error: "Falta configurar GEMINI_API_KEY en el servidor." }, { status: 503 });
+    return Response.json(
+      { error: "Falta configurar GEMINI_API_KEY (o GOOGLE_API_KEY) en el servidor." },
+      { status: 503 },
+    );
   }
 
   const body = await request.json().catch(() => ({}));
@@ -255,7 +258,7 @@ export async function POST({ request }) {
 
     if (aiResponse.status === 401 || aiResponse.status === 403) {
       return Response.json(
-        { error: "No se pudo autenticar con Gemini. Revisa GEMINI_API_KEY." },
+        { error: "No se pudo autenticar con Gemini. Revisa GEMINI_API_KEY o GOOGLE_API_KEY." },
         { status: 502 },
       );
     }
