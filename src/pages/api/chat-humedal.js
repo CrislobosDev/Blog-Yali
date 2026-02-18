@@ -4,122 +4,66 @@ const MAX_HISTORY_MESSAGES = 10;
 const FALLBACK_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
 const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
 const MAX_RETRIES_PER_MODEL = 1;
+const PROVIDER_TIMEOUT_MS = 18000;
 
 const SYSTEM_PROMPT = `
 Eres el asistente virtual oficial de Yali Salvaje.
+Siempre respondes en español.
 
-Tu objetivo es ayudar a visitantes, fotógrafos, turistas, estudiantes y amantes de la naturaleza a conocer y visitar el Humedal El Yali, además de difundir el proyecto Yali Salvaje.
+OBJETIVO
+- Responder sobre Humedal El Yali, Reserva Nacional El Yali, biodiversidad, acceso, fotografia, turismo y conservacion.
+- Educar, informar y ayudar a visitantes y fotografos de naturaleza.
 
-Tu rol es:
+IDENTIDAD
+- Representas a Yali Salvaje: fotografia, educacion ambiental y difusion del Humedal El Yali.
+- Tono: amigable, natural, experto en naturaleza, educativo.
+- Evita tecnicismos innecesarios.
 
-- Informar sobre el Humedal El Yali
-- Ayudar a planificar visitas
-- Explicar biodiversidad y aves
-- Promover educación ambiental
-- Orientar a fotógrafos de naturaleza
-- Representar el proyecto Yali Salvaje
+CONTEXTO CONFIABLE
+- Ubicacion: comuna de Santo Domingo, provincia de San Antonio, Region de Valparaiso, Chile.
+- Distancia aproximada desde Santiago: 120 km.
+- Coordenadas aproximadas: 33.733 S, 71.650 O.
+- Humedal El Yali: ecosistema completo de aprox. 11.500 ha.
+- Reserva Nacional El Yali: 520 ha dentro del humedal, creada en 1996 y administrada por CONAF.
+- Sitio Ramsar de importancia internacional.
+- Alta biodiversidad: mas de 115 especies de aves registradas y aprox. 176 especies de vertebrados.
+- Proporciona zonas de alimentacion, nidificacion y descanso para aves migratorias.
+- Clima mediterraneo con influencia oceanica: temperatura media anual 13,2 C y precipitacion anual 481 mm (lluvias sobre todo entre mayo y agosto).
 
----
+DIFERENCIA CLAVE
+- Humedal El Yali = ecosistema completo.
+- Reserva Nacional El Yali = parte protegida dentro del humedal.
 
-INFORMACION BASE CONFIABLE
+CUERPOS DE AGUA IMPORTANTES
+- Lagunas: La Matanza, Colejuda, Cabildo, Guaraivo, El Rey, Maura, Seca, Albufera El Yali.
+- Esteros: El Yali, Tricao, Maitenlahue, Las Rosas, El Peuco.
+- Salinas: El Convento y Bucalemu.
 
-Ubicación:
-- El Humedal El Yali está en la costa de la Región de Valparaíso, Chile.
-- Comuna de Santo Domingo.
-- Aproximadamente a 120 km de Santiago.
+BIODIVERSIDAD DESTACADA
+- Aves: flamenco chileno, cisne de cuello negro, cisne coscoroba, gaviota cahuil, gaviota de Franklin, garza cuca, yeco, perrito, tagua, siete colores.
+- Mamiferos: zorro culpeo, zorro chilla, coipo, degu, cururo, huina, quique.
+- Anfibios: rana grande chilena, sapo de rulo, sapo de cuatro ojos.
+- Referencia general: ~30% migratorias y ~70% residentes.
 
-Características:
-- Es un santuario de biodiversidad.
-- Tiene alrededor de 16 cuerpos de agua.
-- Su extensión aproximada es 11.000 hectáreas.
-- Es sitio Ramsar de importancia internacional.
+VISITA Y FOTOGRAFIA
+- Actividades: observacion de aves, fotografia de naturaleza, turismo ecologico, educacion ambiental.
+- Se puede visitar todo el ano, con buen rendimiento de aves en invierno y primavera.
+- Mejor horario: temprano por la manana.
+- El acceso depende del sector (zonas publicas y zonas protegidas).
+- Recomendacion de ruta: buscar "Reserva Nacional El Yali" en Google Maps.
 
-Límites geográficos:
-- Norte: Estero Tricao
-- Sur: Estero Maitenlahue
-- Este: Ruta de la Fruta
-- Oeste: Océano Pacífico
-
-Importancia ecológica:
-- Hábitat de aves migratorias y especies nativas.
-- Zona clave para observación de aves.
-- Ecosistema protegido.
-
-Proyecto Yali Salvaje:
-- Promueve conservación.
-- Educación ambiental.
-- Fotografía de naturaleza.
-- Difusión del humedal.
-
----
-
-COMPORTAMIENTO DEL ASISTENTE
-
-Debes responder como un guía experto en el humedal.
-
-Tus respuestas deben ser:
-
-- claras
-- útiles
-- concretas
-- naturales
-- en español
-
----
-
-IMPORTANTE: ASISTENTE ACTIVO
-
-Además de responder, debes hacer preguntas útiles al usuario para ayudarlo mejor.
-
-Ejemplos de preguntas que puedes hacer:
-
-- ¿Quieres visitar el humedal o solo informarte?
-- ¿Desde qué ciudad vendrías?
-- ¿Te interesa observar aves o hacer fotografía?
-- ¿Es tu primera vez visitando El Yali?
-- ¿En qué época planeas ir?
-- ¿Te interesan especialmente los flamencos u otras aves?
-- ¿Quieres saber cómo llegar exactamente?
-- ¿Quieres recomendaciones de horarios?
-
-Haz máximo 1 o 2 preguntas por respuesta.
-
----
-
-REGLAS IMPORTANTES
-
+REGLAS DE RESPUESTA
+- Responde claro, preciso, util y breve.
 - No inventes datos.
-- Si no sabes algo, di: "No tengo ese dato confirmado".
-- No inventes fechas, cifras ni especies.
-- Si preguntan algo fuera del humedal o proyecto, redirige el tema.
+- Si falta certeza: "No tengo ese dato confirmado."
+- Si no hay informacion confiable sobre dias/horarios exactos o tarifas exactas, dilo explicitamente.
+- No saludes en cada respuesta; saluda solo si el usuario saluda o en el primer turno.
+- Incluye maximo 1 pregunta de seguimiento cuando ayude.
 
-Ejemplo:
-"Eso está fuera del alcance del asistente, pero puedo ayudarte con información del Humedal El Yali."
-
----
-
-PRIORIDAD: UTILIDAD PRACTICA
-
-Ayuda con:
-
-- cómo llegar
-- cuándo visitar
-- qué aves ver
-- mejores horarios
-- recomendaciones para visitantes
-- fotografía
-- conservación
-
----
-
-TONO
-
-- cercano
-- natural
-- profesional
-- como guía local experto
-
-Representas a Yali Salvaje.
+ALCANCE
+- Solo temas relacionados con Humedal El Yali, Reserva Nacional El Yali, fauna, fotografia y Yali Salvaje.
+- Si preguntan fuera de alcance, responde exactamente:
+"Soy el asistente de Yali Salvaje y solo puedo responder sobre el Humedal El Yali y temas relacionados."
 `;
 
 
@@ -156,6 +100,14 @@ const extractText = (responseData) => {
   return "";
 };
 
+const isTruncatedByProvider = (responseData) => {
+  const candidates = Array.isArray(responseData?.candidates) ? responseData.candidates : [];
+  return candidates.some((candidate) => {
+    const reason = String(candidate?.finishReason || "").toUpperCase();
+    return reason === "MAX_TOKENS" || reason === "LENGTH";
+  });
+};
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const parseRetryAfterMs = (response) => {
@@ -165,6 +117,20 @@ const parseRetryAfterMs = (response) => {
     return Math.min(seconds * 1000, 5000);
   }
   return null;
+};
+
+const isScheduleQuestion = (text) => {
+  const normalized = String(text || "").toLowerCase();
+  return /(dias|días|horario|horarios|abierta|abierto|abre|apertura)/i.test(normalized);
+};
+
+const isLikelyIncompleteAnswer = (text) => {
+  const value = String(text || "").trim();
+  if (!value) return true;
+  if (value.length < 18) return true;
+  const hasClosingPunctuation = /[.!?…)"']$/.test(value);
+  const endsWithConnector = /\b(el|la|los|las|de|del|y|o|que|para|por|en|con|humedal)\s*$/i.test(value);
+  return !hasClosingPunctuation && endsWithConnector;
 };
 
 export async function POST({ request }) {
@@ -193,6 +159,15 @@ export async function POST({ request }) {
     );
   }
 
+  if (isScheduleQuestion(userMessage)) {
+    return Response.json({
+      answer:
+        "No tengo ese dato confirmado sobre dias u horarios de apertura del Humedal El Yali. " +
+        "Para evitar informacion incorrecta, revisa canales oficiales de administracion local y Yali Salvaje. " +
+        "Si quieres, te ayudo con mejor horario para observacion de aves y como llegar.",
+    });
+  }
+
   const contents = [
     ...history.map((item) => ({
       role: normalizeRole(item.role),
@@ -217,25 +192,46 @@ export async function POST({ request }) {
       ":generateContent";
 
     for (let retry = 0; retry <= MAX_RETRIES_PER_MODEL; retry += 1) {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
-        },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: SYSTEM_PROMPT }],
+      let response;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), PROVIDER_TIMEOUT_MS);
+      try {
+        response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey,
           },
-          contents,
-          generationConfig: {
-            temperature: 0.15,
-            maxOutputTokens: 340,
-            topP: 0.85,
+          signal: controller.signal,
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: SYSTEM_PROMPT }],
+            },
+            contents,
+            generationConfig: {
+            temperature: 0.2,
+            maxOutputTokens: 520,
+            topP: 0.9,
             topK: 40,
           },
         }),
-      });
+        });
+      } catch (error) {
+        clearTimeout(timeoutId);
+        const isTimeout = error instanceof Error && error.name === "AbortError";
+        attemptErrors.push({
+          model,
+          status: isTimeout ? 408 : 0,
+          message: isTimeout ? "Provider timeout" : String(error?.message || error),
+        });
+        if (retry < MAX_RETRIES_PER_MODEL) {
+          await sleep(900 + retry * 500);
+          continue;
+        }
+        break;
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       if (response.ok) {
         aiResponse = response;
@@ -311,9 +307,14 @@ export async function POST({ request }) {
 
   const data = await aiResponse.json();
   const answer = extractText(data);
+  const wasTruncated = isTruncatedByProvider(data);
 
-  if (!answer) {
-    return Response.json({ error: "La IA no devolvio contenido util." }, { status: 502 });
+  if (!answer || isLikelyIncompleteAnswer(answer) || wasTruncated) {
+    return Response.json({
+      answer:
+        "No pude generar una respuesta completa en este intento. " +
+        "Puedes repetir la pregunta y te respondere en formato corto y directo para evitar cortes.",
+    });
   }
 
   return Response.json({ answer });

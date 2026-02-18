@@ -542,15 +542,20 @@
       if (status instanceof HTMLElement) status.textContent = "Respondiendo...";
       const typingNode = appendTypingMessage();
 
+      let timeoutId = 0;
       try {
+        const controller = new AbortController();
+        timeoutId = window.setTimeout(() => controller.abort(), 20000);
         const response = await fetch("/api/chat-humedal", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
           body: JSON.stringify({
             message,
             history: history.slice(0, -1),
           }),
         });
+        clearTimeout(timeoutId);
 
         const data = await response.json().catch(() => ({}));
         if (!response.ok) {
@@ -560,10 +565,16 @@
         appendMessage(data.answer || "No hubo respuesta.", "assistant");
         if (status instanceof HTMLElement) status.textContent = "";
       } catch (error) {
-        const fallback = error instanceof Error ? error.message : "Ocurrio un error inesperado.";
+        const fallback =
+          error instanceof Error && error.name === "AbortError"
+            ? "El asistente demoro demasiado en responder. Intenta nuevamente."
+            : error instanceof Error
+              ? error.message
+              : "Ocurrio un error inesperado.";
         appendMessage(fallback, "assistant");
         if (status instanceof HTMLElement) status.textContent = "Error al consultar.";
       } finally {
+        if (timeoutId) clearTimeout(timeoutId);
         typingNode?.remove();
         sendButton.disabled = false;
         if (textarea instanceof HTMLTextAreaElement) textarea.focus();
