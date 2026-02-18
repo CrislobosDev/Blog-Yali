@@ -10,7 +10,7 @@
     Preguntar al asistente
   </button>
 
-  <div class="chat-modal" id="chat-humedal-modal" role="dialog" aria-modal="true" aria-labelledby="chat-title" hidden>
+  <div class="chat-modal" id="chat-humedal-modal" role="dialog" aria-modal="true" aria-labelledby="chat-title" aria-hidden="true">
     <div class="chat-overlay" data-chat-close></div>
     <section class="chat-panel">
       <header class="chat-header">
@@ -98,10 +98,6 @@
   .chat-modal.is-open {
     opacity: 1;
     pointer-events: auto;
-  }
-
-  .chat-modal[hidden] {
-    display: none;
   }
 
   .chat-overlay {
@@ -397,9 +393,10 @@
 </style>
 
 <script>
-  const root = document.querySelector("[data-chat-widget]");
+  const initChatWidget = (root) => {
+    if (!(root instanceof HTMLElement) || root.dataset.chatReady === "true") return;
+    root.dataset.chatReady = "true";
 
-  if (root) {
     const trigger = root.querySelector("[data-chat-open]");
     const modal = root.querySelector(".chat-modal");
     const closeButtons = root.querySelectorAll("[data-chat-close]");
@@ -409,6 +406,7 @@
     const sendButton = root.querySelector("[data-chat-send]");
     const status = root.querySelector("[data-chat-status]");
     const history = [];
+    let openFrameId = 0;
     const scopeAttrName = messages?.firstElementChild
       ?.getAttributeNames()
       .find((name) => name.startsWith("data-astro-cid"));
@@ -488,42 +486,35 @@
       return wrap;
     };
 
-    const finishClose = () => {
-      if (!(modal instanceof HTMLElement) || !(trigger instanceof HTMLElement)) return;
-      modal.hidden = true;
-      trigger.setAttribute("aria-expanded", "false");
-      document.body.style.overflow = "";
+    const clearPendingModalEffects = () => {
+      if (openFrameId) {
+        cancelAnimationFrame(openFrameId);
+        openFrameId = 0;
+      }
     };
 
     const setModalState = (open) => {
       if (!(modal instanceof HTMLElement) || !(trigger instanceof HTMLElement)) return;
+      clearPendingModalEffects();
 
       if (open) {
-        modal.hidden = false;
-        modal.classList.remove("is-open");
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            modal.classList.add("is-open");
-            trigger.setAttribute("aria-expanded", "true");
-            document.body.style.overflow = "hidden";
-            if (textarea instanceof HTMLTextAreaElement) textarea.focus();
-          });
+        if (modal.classList.contains("is-open")) return;
+        openFrameId = requestAnimationFrame(() => {
+          openFrameId = 0;
+          modal.classList.add("is-open");
+          modal.setAttribute("aria-hidden", "false");
+          trigger.setAttribute("aria-expanded", "true");
+          document.body.style.overflow = "hidden";
+          if (textarea instanceof HTMLTextAreaElement) textarea.focus();
         });
         return;
       }
 
+      if (!modal.classList.contains("is-open")) return;
       modal.classList.remove("is-open");
-      const onTransitionEnd = () => {
-        modal.removeEventListener("transitionend", onTransitionEnd);
-        finishClose();
-      };
-
-      modal.addEventListener("transitionend", onTransitionEnd);
-      setTimeout(() => {
-        if (modal instanceof HTMLElement && !modal.classList.contains("is-open") && !modal.hidden) {
-          finishClose();
-        }
-      }, 320);
+      modal.setAttribute("aria-hidden", "true");
+      trigger.setAttribute("aria-expanded", "false");
+      document.body.style.overflow = "";
     };
 
     trigger?.addEventListener("click", () => setModalState(true));
@@ -533,7 +524,7 @@
     });
 
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && modal instanceof HTMLElement && !modal.hidden) {
+      if (event.key === "Escape" && modal instanceof HTMLElement && modal.classList.contains("is-open")) {
         setModalState(false);
       }
     });
@@ -578,5 +569,14 @@
         if (textarea instanceof HTMLTextAreaElement) textarea.focus();
       }
     });
-  }
+  };
+
+  const initChatWidgets = () => {
+    document.querySelectorAll("[data-chat-widget]").forEach((widget) => {
+      initChatWidget(widget);
+    });
+  };
+
+  initChatWidgets();
+  document.addEventListener("astro:page-load", initChatWidgets);
 </script>
